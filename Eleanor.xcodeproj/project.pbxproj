@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		91A2BA511FB1918200B203F5 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 91A2BA501FB1918200B203F5 /* main.cpp */; };
 		91A2BA591FB191F700B203F5 /* SDL2.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91A2BA581FB191F700B203F5 /* SDL2.framework */; };
+		91A2BA611FB2D90500B203F5 /* SDL2_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91A2BA601FB2D90500B203F5 /* SDL2_ttf.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -29,6 +30,11 @@
 		91A2BA581FB191F700B203F5 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = ../../../Library/Frameworks/SDL2.framework; sourceTree = "<group>"; };
 		91A2BA5A1FB1A93C00B203F5 /* framebuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = framebuffer.h; sourceTree = "<group>"; };
 		91A2BA5B1FB1BF6A00B203F5 /* tiny_obj_loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tiny_obj_loader.h; sourceTree = "<group>"; };
+		91A2BA5C1FB2A18000B203F5 /* vector2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vector2.h; sourceTree = "<group>"; };
+		91A2BA5E1FB2A77500B203F5 /* math.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = math.h; sourceTree = "<group>"; };
+		91A2BA5F1FB2A79B00B203F5 /* vector3.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vector3.h; sourceTree = "<group>"; };
+		91A2BA601FB2D90500B203F5 /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = ../../../Library/Frameworks/SDL2_ttf.framework; sourceTree = "<group>"; };
+		91A2BA621FB33D3E00B203F5 /* matrix44.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = matrix44.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +42,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				91A2BA611FB2D90500B203F5 /* SDL2_ttf.framework in Frameworks */,
 				91A2BA591FB191F700B203F5 /* SDL2.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -63,6 +70,7 @@
 		91A2BA4F1FB1918200B203F5 /* Eleanor */ = {
 			isa = PBXGroup;
 			children = (
+				91A2BA5D1FB2A74200B203F5 /* math */,
 				91A2BA5B1FB1BF6A00B203F5 /* tiny_obj_loader.h */,
 				91A2BA501FB1918200B203F5 /* main.cpp */,
 				91A2BA5A1FB1A93C00B203F5 /* framebuffer.h */,
@@ -73,9 +81,21 @@
 		91A2BA571FB191F700B203F5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				91A2BA601FB2D90500B203F5 /* SDL2_ttf.framework */,
 				91A2BA581FB191F700B203F5 /* SDL2.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		91A2BA5D1FB2A74200B203F5 /* math */ = {
+			isa = PBXGroup;
+			children = (
+				91A2BA5E1FB2A77500B203F5 /* math.h */,
+				91A2BA5C1FB2A18000B203F5 /* vector2.h */,
+				91A2BA5F1FB2A79B00B203F5 /* vector3.h */,
+				91A2BA621FB33D3E00B203F5 /* matrix44.h */,
+			);
+			path = math;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -253,6 +273,7 @@
 					"$(inherited)",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
+				HEADER_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -265,6 +286,7 @@
 					"$(inherited)",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
+				HEADER_SEARCH_PATHS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

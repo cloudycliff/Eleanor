@@ -9,13 +9,17 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cmath>
 
 #include <SDL2/SDL.h>
+#include <SDL2_ttf/SDL_ttf.h>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
 #include "framebuffer.h"
+
+#include "math/math.h"
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
@@ -33,7 +37,7 @@ Color red(255, 0, 0);
 Color green(0, 255, 0);
 Color blue(0, 0, 255);
 
-void line(int x0, int y0, int x1, int y1, FrameBuffer &buffer, Color color) {
+void line(int x0, int y0, int x1, int y1, FrameBuffer &buffer, Color &color) {
     
     bool steep = false;
     if (std::abs(x0-x1)<std::abs(y0-y1)) {
@@ -104,7 +108,105 @@ void wireframe(std::string inputfile, FrameBuffer &buffer) {
                 int x1 = (v1[0]+1.0)*SCREEN_WIDTH/2.0;
                 int y1 = (-v1[1]+1.0)*SCREEN_HEIGHT/2.0;
                 
-                line(x0, y0, x1, y1, buffer, red);
+                if (x0 > 400)
+                    line(x0, y0, x1, y1, buffer, red);
+                else
+                    line(x0, y0, x1, y1, buffer, blue);
+            }
+        }
+    }
+}
+
+vector3 barycentric(vector2 *pts, vector2 p) {
+    vector3 u;
+    vector3Cross(u, vector3(pts[2].x-pts[0].x, pts[1].x-pts[0].x, pts[0].x-p.x), vector3(pts[2].y-pts[0].y, pts[1].y-pts[0].y, pts[0].y-p.y));
+    if (std::abs(u.z) < 1) return vector3(-1, 1, 1);
+    return vector3(1.0f-(u.x+u.y)/u.z, u.y/u.z, u.x/u.z);
+}
+
+void triangle(vector2 *pts, FrameBuffer &buffer, float *zbuffer, Color &color) {
+    vector2 bboxmin(buffer.getWidth()-1, buffer.getHeight()-1);
+    vector2 bboxmax(0, 0);
+    vector2 clamp(buffer.getWidth()-1, buffer.getHeight()-1);
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 2; j++) {
+            bboxmin[j] = std::max(0.0f, std::min(bboxmin[j], pts[i][j]));
+            bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
+        }
+    }
+    vector2 p;
+    for (p.x=bboxmin.x; p.x <= bboxmax.x; p.x++) {
+        for (p.y=bboxmin.y; p.y <= bboxmax.y; p.y++) {
+            vector3 bc_screen = barycentric(pts, p);
+            if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
+            
+            float z = 0;
+            for (int i=0; i<3; i++) z += pts[i][2]*bc_screen[i];
+            if (zbuffer[int(p.x+p.y*buffer.getWidth())] < z) {
+                zbuffer[int(p.x+p.y*buffer.getWidth())] = z;
+                buffer.set(p.x, p.y, color);
+            }
+        }
+    }
+}
+
+void model(std::string inputfile, FrameBuffer &buffer, float *zbuffer) {
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    
+    std::string err;
+    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, inputfile.c_str());
+    if (!err.empty()) {
+        std::cerr << err << std::endl;
+    }
+    if (!ret) {
+        close_sdl();
+        return;
+    }
+    vector3 light(0, 0, -1);
+    
+    for (size_t s = 0; s < shapes.size(); s++) {
+        for (size_t f = 0; f < shapes[s].mesh.indices.size()/3; f++) {
+            tinyobj::index_t idx0 = shapes[s].mesh.indices[3*f + 0];
+            tinyobj::index_t idx1 = shapes[s].mesh.indices[3*f + 1];
+            tinyobj::index_t idx2 = shapes[s].mesh.indices[3*f + 2];
+            
+            float v[3][3];
+            int f0 = idx0.vertex_index;
+            int f1 = idx1.vertex_index;
+            int f2 = idx2.vertex_index;
+            for (int k = 0; k < 3; k++) {
+                v[0][k] = attrib.vertices[3 * f0 + k];
+                v[1][k] = attrib.vertices[3 * f1 + k];
+                v[2][k] = attrib.vertices[3 * f2 + k];
+            }
+            
+            vector2 pts[3];
+            vector3 worldCoords[3];
+            for (int k = 0; k < 3; k++) {
+                float *v0 = v[k];
+                
+                int x0 = (v0[0]+1.0)*SCREEN_WIDTH/2.0;
+                int y0 = (-v0[1]+1.0)*SCREEN_HEIGHT/2.0;
+                
+                pts[k].x = x0;
+                pts[k].y = y0;
+                
+                worldCoords[k].x = v0[0];
+                worldCoords[k].y = v0[1];
+                worldCoords[k].z = v0[2];
+            }
+            
+            vector3 n;
+            vector3Cross(n, worldCoords[2]-worldCoords[0], worldCoords[1] - worldCoords[0]);
+            n.normalize();
+            
+            float intensity = vector3Dot(n, light);
+            
+            if (intensity > 0) {
+                Color c(intensity*255, intensity*255, intensity*255);
+                triangle(pts, buffer, zbuffer, c);
             }
         }
     }
@@ -121,6 +223,25 @@ int main(int argc, const char * argv[]) {
     
     std::string inputfile = "obj/african_head/african_head.obj";
     
+    vector2 pts[3] = {vector2(10,10), vector2(100,30), vector2(190,160)};
+    
+    float fps = 0.0f;
+    int frame = 0;
+    Uint32 start = SDL_GetTicks();
+    
+    TTF_Init();
+    TTF_Font *font = TTF_OpenFont("CONSOLA.TTF", 18);
+    SDL_Color color = {255, 0, 0};
+    SDL_Surface *surface = TTF_RenderText_Solid(font, "FPS: 0.00", color);
+    SDL_Rect rect = {0,0,100,40};
+    
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(sdlRenderer, surface);
+    
+    float *zbuffer = new float[SCREEN_WIDTH*SCREEN_HEIGHT];
+    for (int i = 0; i < SCREEN_HEIGHT*SCREEN_WIDTH; i++) {
+        zbuffer[i] = -std::numeric_limits<float>::max();
+    }
+    
     while (!quit) {
         
         handleEvent();
@@ -128,12 +249,27 @@ int main(int argc, const char * argv[]) {
         SDL_SetRenderDrawColor(sdlRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
         SDL_RenderClear(sdlRenderer);
         
-        wireframe(inputfile, frameBuffer);
+        //wireframe(inputfile, frameBuffer);
+        //triangle(pts, frameBuffer, red);
+        model(inputfile, frameBuffer, zbuffer);
         
         frameBuffer.draw(sdlRenderer);
-
+        
+        char *f = new char[10];
+        sprintf(f, "FPS: %.2f", fps);
+        surface = TTF_RenderText_Solid(font, f, color);
+        texture = SDL_CreateTextureFromSurface(sdlRenderer, surface);
+        
+        SDL_RenderCopy(sdlRenderer, texture, NULL, &rect);
+        SDL_RenderPresent(sdlRenderer);
+        
+        frame++;
+        fps = (SDL_GetTicks() - start) / (float)frame;
+        
     }
-    
+    SDL_FreeSurface(surface);
+    TTF_CloseFont(font);
+    SDL_DestroyTexture(texture);
     close_sdl();
     return 0;
 }

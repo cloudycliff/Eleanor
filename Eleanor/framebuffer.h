@@ -36,7 +36,7 @@ public:
         memset(buffer, 0, width*height*sizeof(Uint32));
     }
     
-    bool set(int x, int y, Color c) {
+    bool set(int x, int y, Color &c) {
         if (x<0 || x>=width || y<0 || y>=height) return false;
         buffer[y * width + x] = c;
         return true;
@@ -50,8 +50,11 @@ public:
                 SDL_RenderDrawPoint(sdlRenderer, x, y);
             }
         }
-        SDL_RenderPresent(sdlRenderer);
+        
     }
+    
+    int getWidth() {return width;}
+    int getHeight() {return height;}
 };
 
 #endif /* framebuffer_h */

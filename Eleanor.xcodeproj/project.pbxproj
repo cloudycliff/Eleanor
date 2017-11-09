@@ -35,6 +35,7 @@
 		91A2BA5F1FB2A79B00B203F5 /* vector3.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vector3.h; sourceTree = "<group>"; };
 		91A2BA601FB2D90500B203F5 /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = ../../../Library/Frameworks/SDL2_ttf.framework; sourceTree = "<group>"; };
 		91A2BA621FB33D3E00B203F5 /* matrix44.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = matrix44.h; sourceTree = "<group>"; };
+		91A2BA631FB4641100B203F5 /* vector4.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vector4.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +94,7 @@
 				91A2BA5E1FB2A77500B203F5 /* math.h */,
 				91A2BA5C1FB2A18000B203F5 /* vector2.h */,
 				91A2BA5F1FB2A79B00B203F5 /* vector3.h */,
+				91A2BA631FB4641100B203F5 /* vector4.h */,
 				91A2BA621FB33D3E00B203F5 /* matrix44.h */,
 			);
 			path = math;

@@ -117,14 +117,14 @@ void wireframe(std::string inputfile, FrameBuffer &buffer) {
     }
 }
 
-vector3 barycentric(vector2 *pts, vector2 p) {
+vector3 barycentric(vector3 *pts, vector2 p) {
     vector3 u;
     vector3Cross(u, vector3(pts[2].x-pts[0].x, pts[1].x-pts[0].x, pts[0].x-p.x), vector3(pts[2].y-pts[0].y, pts[1].y-pts[0].y, pts[0].y-p.y));
     if (std::abs(u.z) < 1) return vector3(-1, 1, 1);
     return vector3(1.0f-(u.x+u.y)/u.z, u.y/u.z, u.x/u.z);
 }
 
-void triangle(vector2 *pts, FrameBuffer &buffer, float *zbuffer, Color &color) {
+void triangle(vector3 *pts, FrameBuffer &buffer, float *zbuffer, Color &color) {
     vector2 bboxmin(buffer.getWidth()-1, buffer.getHeight()-1);
     vector2 bboxmax(0, 0);
     vector2 clamp(buffer.getWidth()-1, buffer.getHeight()-1);
@@ -137,11 +137,11 @@ void triangle(vector2 *pts, FrameBuffer &buffer, float *zbuffer, Color &color) {
     vector2 p;
     for (p.x=bboxmin.x; p.x <= bboxmax.x; p.x++) {
         for (p.y=bboxmin.y; p.y <= bboxmax.y; p.y++) {
-            vector3 bc_screen = barycentric(pts, p);
-            if (bc_screen.x<0 || bc_screen.y<0 || bc_screen.z<0) continue;
+            vector3 bc = barycentric(pts, p);
+            if (bc.x<0 || bc.y<0 || bc.z<0) continue;
             
             float z = 0;
-            for (int i=0; i<3; i++) z += pts[i][2]*bc_screen[i];
+            for (int i=0; i<3; i++) z += pts[i][2]*bc[i];
             if (zbuffer[int(p.x+p.y*buffer.getWidth())] < z) {
                 zbuffer[int(p.x+p.y*buffer.getWidth())] = z;
                 buffer.set(p.x, p.y, color);
@@ -150,7 +150,7 @@ void triangle(vector2 *pts, FrameBuffer &buffer, float *zbuffer, Color &color) {
     }
 }
 
-void model(std::string inputfile, FrameBuffer &buffer, float *zbuffer) {
+void model(std::string inputfile, FrameBuffer &buffer, float *zbuffer, matrix44 &m) {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -182,20 +182,17 @@ void model(std::string inputfile, FrameBuffer &buffer, float *zbuffer) {
                 v[2][k] = attrib.vertices[3 * f2 + k];
             }
             
-            vector2 pts[3];
+            vector3 pts[3];
             vector3 worldCoords[3];
             for (int k = 0; k < 3; k++) {
                 float *v0 = v[k];
                 
-                int x0 = (v0[0]+1.0)*SCREEN_WIDTH/2.0;
-                int y0 = (-v0[1]+1.0)*SCREEN_HEIGHT/2.0;
+                vector3 vv = vector3(v0[0], v0[1], v0[2]);
+                vector4 vvv = m * vector4(vv, 1.0f);
                 
-                pts[k].x = x0;
-                pts[k].y = y0;
+                pts[k] = vector3(vvv.x/vvv.w, vvv.y/vvv.w, vvv.z/vvv.w);
                 
-                worldCoords[k].x = v0[0];
-                worldCoords[k].y = v0[1];
-                worldCoords[k].z = v0[2];
+                worldCoords[k] = vv;
             }
             
             vector3 n;
@@ -211,6 +208,19 @@ void model(std::string inputfile, FrameBuffer &buffer, float *zbuffer) {
         }
     }
 }
+int depth = 255;
+matrix44 viewport(int x, int y, int w, int h) {
+    matrix44 m = matrix44::identity();
+    m(0, 3) = x + w/2.0f;
+    m(1, 3) = y + h/2.0f;
+    m(2, 3) = depth/2.0f;
+    
+    m(0, 0) = w/2.0f;
+    m(1, 1) = h/2.0f;
+    m(2, 2) = depth/2.0f;
+    
+    return m;
+}
 
 int main(int argc, const char * argv[]) {
     
@@ -223,7 +233,7 @@ int main(int argc, const char * argv[]) {
     
     std::string inputfile = "obj/african_head/african_head.obj";
     
-    vector2 pts[3] = {vector2(10,10), vector2(100,30), vector2(190,160)};
+    //vector2 pts[3] = {vector2(10,10), vector2(100,30), vector2(190,160)};
     
     float fps = 0.0f;
     int frame = 0;
@@ -242,6 +252,13 @@ int main(int argc, const char * argv[]) {
         zbuffer[i] = -std::numeric_limits<float>::max();
     }
     
+    vector3 camera(0,0,3);
+    matrix44 projection = matrix44::identity();
+    projection(3, 2) = -1.0f/camera.z;
+    matrix44 mviewport = viewport(SCREEN_WIDTH/8, SCREEN_HEIGHT/8, SCREEN_WIDTH*3/4, SCREEN_HEIGHT*3/4);
+    
+    matrix44 m = mviewport * projection;
+    
     while (!quit) {
         
         handleEvent();
@@ -251,12 +268,12 @@ int main(int argc, const char * argv[]) {
         
         //wireframe(inputfile, frameBuffer);
         //triangle(pts, frameBuffer, red);
-        model(inputfile, frameBuffer, zbuffer);
+        model(inputfile, frameBuffer, zbuffer, m);
         
         frameBuffer.draw(sdlRenderer);
         
         char *f = new char[10];
-        sprintf(f, "FPS: %.2f", fps);
+        sprintf(f, "FPS: %.3f", fps);
         surface = TTF_RenderText_Solid(font, f, color);
         texture = SDL_CreateTextureFromSurface(sdlRenderer, surface);
         
@@ -264,7 +281,7 @@ int main(int argc, const char * argv[]) {
         SDL_RenderPresent(sdlRenderer);
         
         frame++;
-        fps = (SDL_GetTicks() - start) / (float)frame;
+        fps = frame / (float)(SDL_GetTicks() - start);
         
     }
     SDL_FreeSurface(surface);

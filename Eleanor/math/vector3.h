@@ -24,6 +24,7 @@ struct vector3 {
     
     vector3 operator -(const vector3 &vv) const;
     float &operator [](const int index);
+    const vector3 &operator =(const vector3 &vv);
 };
 
 inline vector3::vector3() {}
@@ -51,6 +52,13 @@ inline float &vector3::operator [](const int index) {
     if (index == 0) return x;
     else if (index == 1) return y;
     else return z;
+}
+
+inline const vector3 &vector3::operator=(const vector3 &vv) {
+    x = vv.x;
+    y = vv.y;
+    z = vv.z;
+    return *this;
 }
 
 inline void vector3Cross(vector3 &out, const vector3 &v1, const vector3 &v2) {

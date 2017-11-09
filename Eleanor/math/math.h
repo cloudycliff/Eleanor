@@ -11,6 +11,7 @@
 
 #include "vector2.h"
 #include "vector3.h"
+#include "vector4.h"
 #include "matrix44.h"
 
 #endif /* math_h */

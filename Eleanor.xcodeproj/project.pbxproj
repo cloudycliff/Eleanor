@@ -28,7 +28,7 @@
 		91A2BA4D1FB1918200B203F5 /* Eleanor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Eleanor; sourceTree = BUILT_PRODUCTS_DIR; };
 		91A2BA501FB1918200B203F5 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		91A2BA581FB191F700B203F5 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = ../../../Library/Frameworks/SDL2.framework; sourceTree = "<group>"; };
-		91A2BA5A1FB1A93C00B203F5 /* framebuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = framebuffer.h; sourceTree = "<group>"; };
+		91A2BA5A1FB1A93C00B203F5 /* softrenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = softrenderer.h; sourceTree = "<group>"; };
 		91A2BA5B1FB1BF6A00B203F5 /* tiny_obj_loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tiny_obj_loader.h; sourceTree = "<group>"; };
 		91A2BA5C1FB2A18000B203F5 /* vector2.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vector2.h; sourceTree = "<group>"; };
 		91A2BA5E1FB2A77500B203F5 /* math.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = math.h; sourceTree = "<group>"; };
@@ -74,7 +74,7 @@
 				91A2BA5D1FB2A74200B203F5 /* math */,
 				91A2BA5B1FB1BF6A00B203F5 /* tiny_obj_loader.h */,
 				91A2BA501FB1918200B203F5 /* main.cpp */,
-				91A2BA5A1FB1A93C00B203F5 /* framebuffer.h */,
+				91A2BA5A1FB1A93C00B203F5 /* softrenderer.h */,
 			);
 			path = Eleanor;
 			sourceTree = "<group>";

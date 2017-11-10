@@ -17,7 +17,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-#include "framebuffer.h"
+#include "softrenderer.h"
 
 #include "math/math.h"
 
@@ -37,51 +37,8 @@ Color red(255, 0, 0);
 Color green(0, 255, 0);
 Color blue(0, 0, 255);
 
-void line(int x0, int y0, int x1, int y1, FrameBuffer &buffer, Color &color) {
-    
-    bool steep = false;
-    if (std::abs(x0-x1)<std::abs(y0-y1)) {
-        std::swap(x0, y0);
-        std::swap(x1, y1);
-        steep = true;
-    }
-    if (x0>x1) {
-        std::swap(x0, x1);
-        std::swap(y0, y1);
-    }
-    int dx = x1-x0;
-    int dy = y1-y0;
-    int derror2 = std::abs(dy)*2;
-    int error2 = 0;
-    int y = y0;
-    for (int x=x0; x<=x1; x++) {
-        if (steep) {
-            buffer.set(y, x, color);
-        } else {
-            buffer.set(x, y, color);
-        }
-        error2 += derror2;
-        if (error2 > dx) {
-            y += (y1>y0?1:-1);
-            error2 -= dx*2;
-        }
-    }
-}
 
-void wireframe(std::string inputfile, FrameBuffer &buffer) {
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
-    
-    std::string err;
-    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, inputfile.c_str());
-    if (!err.empty()) {
-        std::cerr << err << std::endl;
-    }
-    if (!ret) {
-        close_sdl();
-        return;
-    }
+void wireframe(tinyobj::attrib_t attrib, std::vector<tinyobj::shape_t> shapes, SoftRenderer &buffer) {
     
     for (size_t s = 0; s < shapes.size(); s++) {
         for (size_t f = 0; f < shapes[s].mesh.indices.size()/3; f++) {
@@ -108,62 +65,14 @@ void wireframe(std::string inputfile, FrameBuffer &buffer) {
                 int x1 = (v1[0]+1.0)*SCREEN_WIDTH/2.0;
                 int y1 = (-v1[1]+1.0)*SCREEN_HEIGHT/2.0;
                 
-                if (x0 > 400)
-                    line(x0, y0, x1, y1, buffer, red);
-                else
-                    line(x0, y0, x1, y1, buffer, blue);
+                buffer.line(x0, y0, x1, y1, blue);
             }
         }
     }
 }
 
-vector3 barycentric(vector3 *pts, vector2 p) {
-    vector3 u;
-    vector3Cross(u, vector3(pts[2].x-pts[0].x, pts[1].x-pts[0].x, pts[0].x-p.x), vector3(pts[2].y-pts[0].y, pts[1].y-pts[0].y, pts[0].y-p.y));
-    if (std::abs(u.z) < 1) return vector3(-1, 1, 1);
-    return vector3(1.0f-(u.x+u.y)/u.z, u.y/u.z, u.x/u.z);
-}
-
-void triangle(vector3 *pts, FrameBuffer &buffer, float *zbuffer, Color &color) {
-    vector2 bboxmin(buffer.getWidth()-1, buffer.getHeight()-1);
-    vector2 bboxmax(0, 0);
-    vector2 clamp(buffer.getWidth()-1, buffer.getHeight()-1);
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 2; j++) {
-            bboxmin[j] = std::max(0.0f, std::min(bboxmin[j], pts[i][j]));
-            bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
-        }
-    }
-    vector2 p;
-    for (p.x=bboxmin.x; p.x <= bboxmax.x; p.x++) {
-        for (p.y=bboxmin.y; p.y <= bboxmax.y; p.y++) {
-            vector3 bc = barycentric(pts, p);
-            if (bc.x<0 || bc.y<0 || bc.z<0) continue;
-            
-            float z = 0;
-            for (int i=0; i<3; i++) z += pts[i][2]*bc[i];
-            if (zbuffer[int(p.x+p.y*buffer.getWidth())] < z) {
-                zbuffer[int(p.x+p.y*buffer.getWidth())] = z;
-                buffer.set(p.x, p.y, color);
-            }
-        }
-    }
-}
-
-void model(std::string inputfile, FrameBuffer &buffer, float *zbuffer, matrix44 &m) {
-    tinyobj::attrib_t attrib;
-    std::vector<tinyobj::shape_t> shapes;
-    std::vector<tinyobj::material_t> materials;
+void model(tinyobj::attrib_t attrib, std::vector<tinyobj::shape_t> shapes, SoftRenderer &renderer, matrix44 &m) {
     
-    std::string err;
-    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, inputfile.c_str());
-    if (!err.empty()) {
-        std::cerr << err << std::endl;
-    }
-    if (!ret) {
-        close_sdl();
-        return;
-    }
     vector3 light(0, 0, -1);
     
     for (size_t s = 0; s < shapes.size(); s++) {
@@ -203,7 +112,7 @@ void model(std::string inputfile, FrameBuffer &buffer, float *zbuffer, matrix44 
             
             if (intensity > 0) {
                 Color c(intensity*255, intensity*255, intensity*255);
-                triangle(pts, buffer, zbuffer, c);
+                renderer.triangle(pts, c);
             }
         }
     }
@@ -252,9 +161,22 @@ int main(int argc, const char * argv[]) {
         return -1;
     }
     
-    FrameBuffer frameBuffer(SCREEN_WIDTH, SCREEN_HEIGHT);
+    SoftRenderer renderer(SCREEN_WIDTH, SCREEN_HEIGHT);
     
     std::string inputfile = "obj/african_head/african_head.obj";
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    
+    std::string err;
+    bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &err, inputfile.c_str());
+    if (!err.empty()) {
+        std::cerr << err << std::endl;
+    }
+    if (!ret) {
+        close_sdl();
+        return -1;
+    }
     
     //vector2 pts[3] = {vector2(10,10), vector2(100,30), vector2(190,160)};
     
@@ -269,11 +191,6 @@ int main(int argc, const char * argv[]) {
     SDL_Rect rect = {0,0,100,40};
     
     SDL_Texture *texture = SDL_CreateTextureFromSurface(sdlRenderer, surface);
-    
-    float *zbuffer = new float[SCREEN_WIDTH*SCREEN_HEIGHT];
-    for (int i = 0; i < SCREEN_HEIGHT*SCREEN_WIDTH; i++) {
-        zbuffer[i] = -std::numeric_limits<float>::max();
-    }
     
     vector3 center(0,0,0);
     matrix44 mviewport = viewport(SCREEN_WIDTH/8, SCREEN_HEIGHT/8, SCREEN_WIDTH*3/4, SCREEN_HEIGHT*3/4);
@@ -293,16 +210,13 @@ int main(int argc, const char * argv[]) {
         SDL_SetRenderDrawColor(sdlRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
         SDL_RenderClear(sdlRenderer);
         
-        frameBuffer.clear();
-        for (int i = 0; i < SCREEN_HEIGHT*SCREEN_WIDTH; i++) {
-            zbuffer[i] = -std::numeric_limits<float>::max();
-        }
+        renderer.clear();
         
-        //wireframe(inputfile, frameBuffer);
+        //wireframe(attrib, shapes, renderer);
         //triangle(pts, frameBuffer, red);
-        model(inputfile, frameBuffer, zbuffer, m);
+        model(attrib, shapes, renderer, m);
         
-        frameBuffer.draw(sdlRenderer);
+        renderer.draw(sdlRenderer);
         
         char *f = new char[10];
         sprintf(f, "FPS: %.3f", fps);

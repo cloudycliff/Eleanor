@@ -190,7 +190,7 @@ void model(std::string inputfile, FrameBuffer &buffer, float *zbuffer, matrix44 
                 vector3 vv = vector3(v0[0], v0[1], v0[2]);
                 vector4 vvv = m * vector4(vv, 1.0f);
                 
-                pts[k] = vector3(vvv.x/vvv.w, vvv.y/vvv.w, vvv.z/vvv.w);
+                pts[k] = vector3(int(vvv.x/vvv.w), int(vvv.y/vvv.w), int(vvv.z/vvv.w));
                 
                 worldCoords[k] = vv;
             }
@@ -222,6 +222,29 @@ matrix44 viewport(int x, int y, int w, int h) {
     return m;
 }
 
+matrix44 lookat(vector3 eye, vector3 center, vector3 up) {
+    vector3 z = (eye - center).normalize();
+    vector3 x;
+    vector3Cross(x, up, z);
+    x.normalize();
+    vector3 y;
+    vector3Cross(y, z, x);
+    y.normalize();
+    
+    matrix44 res = matrix44::identity();
+    for (int i = 0; i < 3; i++) {
+        res(0, i) = x[i];
+        res(1, i) = y[i];
+        res(2, i) = z[i];
+        res(i, 3) = -center[i];
+    }
+    return res;
+}
+
+float cameraX = 0;
+float cameraY = 0;
+float speed = 1;
+
 int main(int argc, const char * argv[]) {
     
     if (!init_sdl(SCREEN_WIDTH, SCREEN_HEIGHT, "Eleanor")) {
@@ -252,19 +275,28 @@ int main(int argc, const char * argv[]) {
         zbuffer[i] = -std::numeric_limits<float>::max();
     }
     
-    vector3 camera(0,0,3);
-    matrix44 projection = matrix44::identity();
-    projection(3, 2) = -1.0f/camera.z;
+    vector3 center(0,0,0);
     matrix44 mviewport = viewport(SCREEN_WIDTH/8, SCREEN_HEIGHT/8, SCREEN_WIDTH*3/4, SCREEN_HEIGHT*3/4);
-    
-    matrix44 m = mviewport * projection;
     
     while (!quit) {
         
         handleEvent();
         
+        vector3 camera(cameraX,cameraY,3);
+        matrix44 modelView = lookat(camera, center, vector3(0,1,0));
+        matrix44 projection = matrix44::identity();
+        projection(3, 2) = -1.0f/(camera-center).length();
+        
+        matrix44 m = mviewport * projection * modelView;
+        
+        
         SDL_SetRenderDrawColor(sdlRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
         SDL_RenderClear(sdlRenderer);
+        
+        frameBuffer.clear();
+        for (int i = 0; i < SCREEN_HEIGHT*SCREEN_WIDTH; i++) {
+            zbuffer[i] = -std::numeric_limits<float>::max();
+        }
         
         //wireframe(inputfile, frameBuffer);
         //triangle(pts, frameBuffer, red);
@@ -281,7 +313,7 @@ int main(int argc, const char * argv[]) {
         SDL_RenderPresent(sdlRenderer);
         
         frame++;
-        fps = frame / (float)(SDL_GetTicks() - start);
+        fps = frame*1000 / (float)(SDL_GetTicks() - start);
         
     }
     SDL_FreeSurface(surface);
@@ -308,7 +340,7 @@ bool init_sdl(int width, int height, const char *title) {
         std::cout << "SDL create window failed: " << SDL_GetError() << std::endl;
         return false;
     }
-    sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_ACCELERATED);
+    sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (sdlRenderer == NULL) {
         std::cout << "SDL create renderer failed: " << SDL_GetError() << std::endl;
         return false;
@@ -330,6 +362,10 @@ void close_sdl() {
 
 void handleKeyEvent(int k) {
     if (k == SDL_SCANCODE_ESCAPE) quit = true;
+    else if (k == SDL_SCANCODE_W) cameraY += speed;
+    else if (k == SDL_SCANCODE_S) cameraY -= speed;
+    else if (k == SDL_SCANCODE_A) cameraX += speed;
+    else if (k == SDL_SCANCODE_D) cameraX -= speed;
 }
 
 void handleEvent() {

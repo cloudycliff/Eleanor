@@ -50,11 +50,13 @@ public:
                 SDL_RenderDrawPoint(sdlRenderer, x, y);
             }
         }
-        
     }
     
     int getWidth() {return width;}
     int getHeight() {return height;}
+    void clear() {
+        memset(buffer, 0, width*height*sizeof(Uint32));
+    }
 };
 
 #endif /* framebuffer_h */

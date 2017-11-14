@@ -25,6 +25,17 @@ struct vector4 {
     
     float &operator [](const int index);
     const vector4 &operator =(const vector4 &vv);
+    vector4 &operator /(const float d) {
+        x /= d;
+        y /= d;
+        z /= d;
+        w /= d;
+        return *this;
+    }
+    
+    void dump() {
+        printf("%f %f %f %f\n", x, y, z, w);
+    }
 };
 
 inline vector4::vector4() {}
@@ -35,6 +46,7 @@ inline vector4::vector4(const vector3 &vv, const float ww) : x(vv.x), y(vv.y), z
 inline float vector4::length() const {
     return sqrt(x*x+y*y+z*z+w*w);
 }
+
 inline vector4 &vector4::normalize() {
     const float len = length();
     const float invLen = 1.0f/len;

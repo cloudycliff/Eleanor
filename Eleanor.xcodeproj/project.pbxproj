@@ -25,6 +25,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		911840CB1FBA914A00197306 /* FPSDisplay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FPSDisplay.h; sourceTree = "<group>"; };
+		911840CC1FBA9DA700197306 /* ModelLoader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelLoader.h; sourceTree = "<group>"; };
 		91A2BA4D1FB1918200B203F5 /* Eleanor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Eleanor; sourceTree = BUILT_PRODUCTS_DIR; };
 		91A2BA501FB1918200B203F5 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		91A2BA581FB191F700B203F5 /* SDL2.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2.framework; path = ../../../Library/Frameworks/SDL2.framework; sourceTree = "<group>"; };
@@ -75,6 +77,8 @@
 				91A2BA5B1FB1BF6A00B203F5 /* tiny_obj_loader.h */,
 				91A2BA501FB1918200B203F5 /* main.cpp */,
 				91A2BA5A1FB1A93C00B203F5 /* softrenderer.h */,
+				911840CB1FBA914A00197306 /* FPSDisplay.h */,
+				911840CC1FBA9DA700197306 /* ModelLoader.h */,
 			);
 			path = Eleanor;
 			sourceTree = "<group>";

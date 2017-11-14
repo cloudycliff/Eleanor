@@ -23,7 +23,9 @@ struct matrix44 {
     matrix44 operator *(matrix44 &mm);
 };
 
-inline matrix44::matrix44() {}
+inline matrix44::matrix44() {
+    memset(m, 0, sizeof(m));
+}
 
 inline float &matrix44::operator ()(const int x, const int y) {
     return m[x][y];

@@ -39,6 +39,13 @@ Color blue(0, 0, 255);
 
 vector3 light_dir(1, 1, 1);
 
+float cameraX = 1;
+float cameraY = 1;
+float cameraZ = 1;
+float speed = 1;
+vector3 center(0,0,0);
+vector3 up(0,1,0);
+
 #define LOOP
 
 //std::string inputfile = "obj/floor.obj";
@@ -71,10 +78,6 @@ struct TestShader : public IShader {
     }
 };
 
-float cameraX = 0;
-float cameraY = -1;
-float cameraZ = 3;
-float speed = 1;
 
 int main(int argc, const char * argv[]) {
     
@@ -91,7 +94,7 @@ int main(int argc, const char * argv[]) {
     FPSDisplay fpsDisplay;
     fpsDisplay.init(sdlRenderer);
     
-    vector3 center(0,0,0);
+    
     matrix44 mviewport = viewport(SCREEN_WIDTH/8, SCREEN_HEIGHT/8, SCREEN_WIDTH*3/4, SCREEN_HEIGHT*3/4);
     
     TestShader shader;
@@ -104,8 +107,8 @@ int main(int argc, const char * argv[]) {
         renderer.enableZTest(enableZ);
         
         vector3 camera(cameraX,cameraY,cameraZ);
-        matrix44 modelView = lookat(camera, center, vector3(0,1,0));
-        matrix44 mprojection = projection(0);//projection(-1.0f/(camera-center).length());
+        matrix44 modelView = lookat(camera, center, up);
+        matrix44 mprojection = projection(-1.0f/(camera-center).length());
         
         m = mviewport * mprojection * modelView;
         
@@ -180,7 +183,7 @@ void handleKeyEvent(int k) {
     else if (k == SDL_SCANCODE_E) cameraZ -= speed;
     else if (k == SDL_SCANCODE_Z) enableZ = !enableZ;
     
-    printf("%f %f %f\n", cameraX, cameraY, cameraZ);
+//    printf("%f %f %f\n", cameraX, cameraY, cameraZ);
 }
 
 void handleEvent() {

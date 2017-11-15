@@ -170,10 +170,10 @@ void SoftRenderer::triangle(vector3 *pts, Color &color) {
 vector3 SoftRenderer::barycentric(vector4 *pts, vector2 p) {
 
     vector3 u;
-//    vector3 s1 = vector3(pts[2].x/pts[2].w-pts[0].x/pts[0].w, pts[1].x/pts[1].w-pts[0].x/pts[0].w, pts[0].x/pts[0].w-p.x);
-//    vector3 s2 = vector3(pts[2].y/pts[2].w-pts[0].y/pts[0].w, pts[1].y/pts[1].w-pts[0].y/pts[0].w, pts[0].y/pts[0].w-p.y);
-    vector3 s1 = vector3(pts[2].x-pts[0].x, pts[1].x-pts[0].x, pts[0].x-p.x);
-    vector3 s2 = vector3(pts[2].y-pts[0].y, pts[1].y-pts[0].y, pts[0].y-p.y);
+    vector3 s1 = vector3(pts[2].x/pts[2].w-pts[0].x/pts[0].w, pts[1].x/pts[1].w-pts[0].x/pts[0].w, pts[0].x/pts[0].w-p.x);
+    vector3 s2 = vector3(pts[2].y/pts[2].w-pts[0].y/pts[0].w, pts[1].y/pts[1].w-pts[0].y/pts[0].w, pts[0].y/pts[0].w-p.y);
+//    vector3 s1 = vector3(pts[2].x-pts[0].x, pts[1].x-pts[0].x, pts[0].x-p.x);
+//    vector3 s2 = vector3(pts[2].y-pts[0].y, pts[1].y-pts[0].y, pts[0].y-p.y);
     
     vector3Cross(u, s1, s2);
     if (std::abs(u.z) > 1e-2) return vector3(1.0f-(u.x+u.y)/u.z, u.y/u.z, u.x/u.z);
@@ -186,8 +186,8 @@ void SoftRenderer::triangle(vector4 *pts, IShader &shader) {
     vector2 clamp(width-1, height-1);
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 2; j++) {
-            bboxmin[j] = std::max(0.0f, std::min(bboxmin[j], pts[i][j]));
-            bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
+            bboxmin[j] = std::max(0.0f, std::min(bboxmin[j], pts[i][j]/pts[i].w));
+            bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]/pts[i].w));
         }
     }
 
@@ -353,6 +353,7 @@ matrix44 lookat(vector3 eye, vector3 center, vector3 up) {
         res(2, i) = z[i];
         res(i, 3) = -center[i];
     }
+
     return res;
 }
 

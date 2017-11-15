@@ -18,6 +18,7 @@
 #include "FPSDisplay.h"
 #include "ModelLoader.h"
 #include "math/math.h"
+#include "TransformUtils.h"
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
@@ -39,10 +40,11 @@ Color blue(0, 0, 255);
 
 vector3 light_dir(1, 1, 1);
 
-float cameraX = 1;
-float cameraY = 1;
-float cameraZ = 1;
+float cameraX = 0;
+float cameraY = 0;
+float cameraZ = 10;
 float speed = 1;
+float rotateAngle = 0.0f;
 vector3 center(0,0,0);
 vector3 up(0,1,0);
 
@@ -107,10 +109,14 @@ int main(int argc, const char * argv[]) {
         renderer.enableZTest(enableZ);
         
         vector3 camera(cameraX,cameraY,cameraZ);
-        matrix44 modelView = lookat(camera, center, up);
+        
+        matrix44 rotate = rotateMatrix(0.0f, 1.0f, 0.0f, rotateAngle);
+        matrix44 translate = translateMatrix(0.0f, 0.0f, 0.0f);
+        
+        matrix44 mview = lookat(camera, center, up);
         matrix44 mprojection = projection(-1.0f/(camera-center).length());
         
-        m = mviewport * mprojection * modelView;
+        m = mviewport * mprojection * mview * translate * rotate;
         
         SDL_SetRenderDrawColor(sdlRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
         SDL_RenderClear(sdlRenderer);
@@ -179,11 +185,10 @@ void handleKeyEvent(int k) {
     else if (k == SDL_SCANCODE_S) cameraY -= speed;
     else if (k == SDL_SCANCODE_A) cameraX += speed;
     else if (k == SDL_SCANCODE_D) cameraX -= speed;
-    else if (k == SDL_SCANCODE_Q) cameraZ += speed;
-    else if (k == SDL_SCANCODE_E) cameraZ -= speed;
+    else if (k == SDL_SCANCODE_Q) rotateAngle += 0.1;
+    else if (k == SDL_SCANCODE_E) rotateAngle -= 0.1;
     else if (k == SDL_SCANCODE_Z) enableZ = !enableZ;
-    
-//    printf("%f %f %f\n", cameraX, cameraY, cameraZ);
+
 }
 
 void handleEvent() {

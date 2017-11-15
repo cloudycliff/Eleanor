@@ -81,7 +81,8 @@ public:
             for (int x = 0; x < width; x++) {
                 Color color = buffer[y * width + x];
                 SDL_SetRenderDrawColor(sdlRenderer, color.r, color.g, color.b, color.a);
-                SDL_RenderDrawPoint(sdlRenderer, x, y);
+                //flip y axis
+                SDL_RenderDrawPoint(sdlRenderer, x, height - y);
             }
         }
     }
@@ -321,46 +322,5 @@ void model(tinyobj::attrib_t attrib, std::vector<tinyobj::shape_t> shapes, SoftR
 }
 
  */
-
-int depth = 255;
-matrix44 viewport(int x, int y, int w, int h) {
-    matrix44 m = matrix44::identity();
-    
-    m(0, 3) = x + w/2.0f;
-    m(1, 3) = y + h/2.0f;
-    m(2, 3) = depth/2.0f;
-    
-    m(0, 0) = w/2.0f;
-    m(1, 1) = h/2.0f;
-    m(2, 2) = depth/2.0f;
-    
-    return m;
-}
-
-matrix44 lookat(vector3 eye, vector3 center, vector3 up) {
-    vector3 z = (eye - center).normalize();
-    vector3 x;
-    vector3Cross(x, up, z);
-    x.normalize();
-    vector3 y;
-    vector3Cross(y, z, x);
-    y.normalize();
-    
-    matrix44 res = matrix44::identity();
-    for (int i = 0; i < 3; i++) {
-        res(0, i) = x[i];
-        res(1, i) = y[i];
-        res(2, i) = z[i];
-        res(i, 3) = -center[i];
-    }
-
-    return res;
-}
-
-matrix44 projection(float coeff) {
-    matrix44 projection = matrix44::identity();
-    projection(3, 2) = coeff;
-    return projection;
-}
 
 #endif /* framebuffer_h */

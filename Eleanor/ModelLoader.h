@@ -10,10 +10,11 @@
 #define ModelLoader_h
 
 #include <vector>
+#include <string>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
-
+#include "TGAImage.h"
 
 class Model {
 private:
@@ -21,6 +22,9 @@ private:
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     
+    TGAImage diffusemap;
+    
+    void loadTexture(std::string filename, const char *suffix, TGAImage &img);
 public:
     Model(std::string inputfile) {
         std::string err;
@@ -28,6 +32,8 @@ public:
         if (!err.empty()) {
             std::cerr << err << std::endl;
         }
+        
+        loadTexture(inputfile, "_diffuse.tga", diffusemap);
     }
     
     int getIndexSize() {
@@ -54,6 +60,28 @@ public:
         normal.z = attrib.normals[3 * vid + 2];
         return normal;
     }
+    
+    vector2 getUV(int vid) {
+        vector2 uv;
+        uv.x = attrib.texcoords[2 * vid];
+        uv.y = attrib.texcoords[2 * vid + 1];
+        return uv;
+    }
+    
+    TGAColor getDiffuse(float u, float v) {
+        return diffusemap.get(u * diffusemap.width, v * diffusemap.height);
+    }
 };
+
+void Model::loadTexture(std::string filename, const char *suffix, TGAImage &img) {
+    std::string texfile(filename);
+    size_t dot = texfile.find_last_of(".");
+    if (dot != std::string::npos) {
+        texfile = texfile.substr(0, dot) + std::string(suffix);
+        bool ret = img.read_tga_file(texfile.c_str());
+        std::cout << "load texture file " << texfile << " " << ret << std::endl;
+        img.flip_vertically();
+    }
+}
 
 #endif /* ModelLoader_h */

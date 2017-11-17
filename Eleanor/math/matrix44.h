@@ -21,6 +21,9 @@ struct matrix44 {
     float &operator ()(const int x, const int y);
     vector4 operator *(const vector4 &vv);
     matrix44 operator *(matrix44 &mm);
+    
+    void transpose();
+    void inverse();
 };
 
 inline matrix44::matrix44() {
@@ -62,6 +65,52 @@ inline matrix44 matrix44::identity() {
     m(3,3) = 1;
     
     return m;
+}
+
+void matrix44::transpose() {
+    for (int i = 0; i < 3; i++)
+        for (int j = i+1; j < 3; j++) {
+            float t = m[i][j];
+            m[i][j] = m[j][i];
+            m[j][i] = t;
+        }
+}
+
+void matrix44::inverse() {
+    float t[3][6];
+    int i, j, k;
+    float f;
+    
+    for(i = 0; i < 3; i++)
+        for(j = 0; j < 6; j++) {
+            if(j < 3)
+                t[i][j] = m[i][j];
+            else if(j == i + 3)
+                t[i][j] = 1;
+            else
+                t[i][j] = 0;
+        }
+    
+    for(i = 0; i < 3; i++) {
+        f = t[i][i];
+        for(j = 0; j < 6; j++)
+            t[i][j] /= f;
+        for(j = 0; j < 3; j++) {
+            if(j != i) {
+                f = t[j][i];
+                for(k = 0; k < 6; k++)
+                    t[j][k] = t[j][k] - t[i][k] * f;
+            }
+        }
+    }
+    
+    for(i = 0; i < 3; i++)
+        for(j = 3; j < 6; j++)
+            m[i][j-3] = t[i][j];
+    
+    m[3][0] = -m[3][0];
+    m[3][1] = -m[3][1];
+    m[3][2] = -m[3][2];
 }
 
 void matrix44::dump() {

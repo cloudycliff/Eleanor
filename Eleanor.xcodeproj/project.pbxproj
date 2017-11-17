@@ -26,6 +26,7 @@
 
 /* Begin PBXFileReference section */
 		910518861FBC3FBB00ACB6ED /* TransformUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TransformUtils.h; sourceTree = "<group>"; };
+		910518871FBD6C7F00ACB6ED /* TGAImage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGAImage.h; sourceTree = "<group>"; };
 		911840CB1FBA914A00197306 /* FPSDisplay.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FPSDisplay.h; sourceTree = "<group>"; };
 		911840CC1FBA9DA700197306 /* ModelLoader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModelLoader.h; sourceTree = "<group>"; };
 		91A2BA4D1FB1918200B203F5 /* Eleanor */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Eleanor; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -81,6 +82,7 @@
 				911840CB1FBA914A00197306 /* FPSDisplay.h */,
 				911840CC1FBA9DA700197306 /* ModelLoader.h */,
 				910518861FBC3FBB00ACB6ED /* TransformUtils.h */,
+				910518871FBD6C7F00ACB6ED /* TGAImage.h */,
 			);
 			path = Eleanor;
 			sourceTree = "<group>";

@@ -19,6 +19,7 @@
 #include "ModelLoader.h"
 #include "math/math.h"
 #include "TransformUtils.h"
+#include "TGAImage.h"
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
@@ -38,7 +39,7 @@ Color green(0, 255, 0);
 Color blue(0, 0, 255);
 
 
-vector3 light_dir(1, 1, 1);
+vector3 light_dir(3, 2, 1);
 
 float cameraX = 0;
 float cameraY = 0;
@@ -55,31 +56,52 @@ std::string inputfile = "obj/african_head/african_head.obj";
 
 Model modelObj(inputfile);
 
-matrix44 m;
+matrix44 mMVP;
+matrix44 mMVP_IT;
+matrix44 mViewport;
+matrix44 mView;
+matrix44 mProjection;
+matrix44 mModel;
 
 struct TestShader : public IShader {
-    vector3 intensity;
+    
+    vector2 uvs[3];
+    vector3 normals[3];
     
     virtual vector4 vertex(int nface, int nthvert) {
         tinyobj::index_t idx = modelObj.getIndex(nface, nthvert);
         
         vector4 pos = modelObj.getVertex(idx.vertex_index);
-        
-        vector4 gl_Position = m * pos;
+        vector4 gl_Position = mViewport * mMVP * pos;
         
         vector3 normal = modelObj.getNormal(idx.normal_index);
+
+        vector4 n = vector4(normal, 0.0f);
+        vector4 nn = mMVP_IT * n;
+        normals[nthvert] = vector3(nn.x, nn.y, nn.z);
         
-        intensity[nthvert] = std::max(0.0f, normal * light_dir);
-        
+        uvs[nthvert] = modelObj.getUV(idx.texcoord_index);
+
         return gl_Position;
     }
     
     virtual void fragment(vector3 bc, Color &c) {
-        float i = std::min(1.0f, intensity * bc);
-        c = Color(255, 255, 255) * i;
+        vector3 n;
+        n.x = normals[0].x*bc.x + normals[1].x*bc.y + normals[2].x*bc.z;
+        n.y = normals[0].y*bc.x + normals[1].y*bc.y + normals[2].y*bc.z;
+        n.z = normals[0].z*bc.x + normals[1].z*bc.y + normals[2].z*bc.z;
+        
+        vector2 uv;
+        uv.x = uvs[0].x*bc.x + uvs[1].x*bc.y + uvs[2].x*bc.z;
+        uv.y = uvs[0].y*bc.x + uvs[1].y*bc.y + uvs[2].y*bc.z;
+        
+        float diff = std::max(0.0f, n*light_dir);
+        TGAColor cc = modelObj.getDiffuse(uv.x, uv.y);
+        c.r = cc.bgra[2]*diff;
+        c.g = cc.bgra[1]*diff;
+        c.b = cc.bgra[0]*diff;
     }
 };
-
 
 int main(int argc, const char * argv[]) {
     
@@ -90,14 +112,13 @@ int main(int argc, const char * argv[]) {
     
     SoftRenderer renderer(SCREEN_WIDTH, SCREEN_HEIGHT);
     
-    
     //vector2 pts[3] = {vector2(10,10), vector2(100,30), vector2(190,160)};
     
     FPSDisplay fpsDisplay;
     fpsDisplay.init(sdlRenderer);
     
-    
-    matrix44 mviewport = viewport(SCREEN_WIDTH/8, SCREEN_HEIGHT/8, SCREEN_WIDTH*3/4, SCREEN_HEIGHT*3/4);
+    mViewport = viewport(SCREEN_WIDTH/8, SCREEN_HEIGHT/8, SCREEN_WIDTH*3/4, SCREEN_HEIGHT*3/4);
+    light_dir.normalize();
     
     TestShader shader;
     
@@ -113,10 +134,16 @@ int main(int argc, const char * argv[]) {
         matrix44 rotate = rotateMatrix(0.0f, 1.0f, 0.0f, rotateAngle);
         matrix44 translate = translateMatrix(0.0f, 0.0f, 0.0f);
         
-        matrix44 mview = lookat(camera, center, up);
-        matrix44 mprojection = projection(-1.0f/(camera-center).length());
+        mView = lookat(camera, center, up);
+        mProjection = projection(-1.0f/(camera-center).length());
         
-        m = mviewport * mprojection * mview * translate * rotate;
+        mModel = translate * rotate;
+        
+        mMVP = mProjection * mView * mModel;
+        
+        mMVP_IT = mProjection * mView * mModel;
+        mMVP_IT.inverse();
+        mMVP_IT.transpose();
         
         SDL_SetRenderDrawColor(sdlRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
         SDL_RenderClear(sdlRenderer);

@@ -12,38 +12,17 @@
 #include <SDL2/SDL.h>
 #include "math/math.h"
 #include "ModelLoader.h"
-
-struct Color {
-    Uint8 r,g,b,a;
-    
-    Color() {}
-    
-    Color(Uint8 rr, Uint8 gg, Uint8 bb, Uint8 aa=255) {
-        r = rr;
-        g = gg;
-        b = bb;
-        a = aa;
-    }
-    
-    Color operator *(float f) {
-        Color ret;
-        ret.r = r * f;
-        ret.g = g * f;
-        ret.b = b * f;
-        ret.a = a * f;
-        
-        return ret;
-    }
-};
+#include "TGAImage.h"
 
 struct IShader {
     virtual vector4 vertex(int nface, int nthvert) = 0;
-    virtual void fragment(vector3 bc, Color &c) = 0;
+    virtual void fragment(vector3 bc, TGAColor &c) = 0;
 };
 
 class SoftRenderer {
 private:
-    Color *buffer;
+    unsigned char *buffer = NULL;
+    int bytespp = 4;
     float *zbuffer;
     int width;
     int height;
@@ -57,8 +36,9 @@ public:
     SoftRenderer(int w, int h) {
         width = w;
         height = h;
-        buffer = (Color*)malloc(width*height*sizeof(Color));
-        memset(buffer, 0, width*height*sizeof(Uint32));
+        int nbytes = width*height*bytespp*sizeof(unsigned char);
+        buffer = new unsigned char[nbytes];
+        memset(buffer, 0, nbytes);
         
         zbuffer = new float[width*height];
         for (int i = 0; i < width*height; i++) {
@@ -70,17 +50,18 @@ public:
         _enableZTest = z;
     }
     
-    bool set(int x, int y, Color &c) {
+    bool set(int x, int y, TGAColor &c) {
         if (x<0 || x>=width || y<0 || y>=height) return false;
-        buffer[y * width + x] = c;
+        
+        memcpy(buffer+(x+y*width)*bytespp, c.bgra, bytespp);
         return true;
     }
     
     void draw(SDL_Renderer *sdlRenderer) {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                Color color = buffer[y * width + x];
-                SDL_SetRenderDrawColor(sdlRenderer, color.r, color.g, color.b, color.a);
+                TGAColor color(buffer+(x+y*width)*bytespp, bytespp);
+                SDL_SetRenderDrawColor(sdlRenderer, color.bgra[2], color.bgra[1], color.bgra[0], color.bgra[3]);
                 //flip y axis
                 SDL_RenderDrawPoint(sdlRenderer, x, height - y);
             }
@@ -97,14 +78,14 @@ public:
         }
     }
     
-    void triangle(vector3 *pts, Color &color);
+    void triangle(vector3 *pts, TGAColor &color);
     void triangle(vector4 *pts, IShader &shader);
-    void line(int x0, int y0, int x1, int y1, Color &color);
+    void line(int x0, int y0, int x1, int y1, TGAColor &color);
     
     void model(Model &modelObj, IShader &shader);
 };
 
-void SoftRenderer::line(int x0, int y0, int x1, int y1, Color &color) {
+void SoftRenderer::line(int x0, int y0, int x1, int y1, TGAColor &color) {
     
     bool steep = false;
     if (std::abs(x0-x1)<std::abs(y0-y1)) {
@@ -142,7 +123,7 @@ vector3 SoftRenderer::barycentric(vector3 *pts, vector2 p) {
     return vector3(1.0f-(u.x+u.y)/u.z, u.y/u.z, u.x/u.z);
 }
 
-void SoftRenderer::triangle(vector3 *pts, Color &color) {
+void SoftRenderer::triangle(vector3 *pts, TGAColor &color) {
     vector2 bboxmin(width-1, height-1);
     vector2 bboxmax(0, 0);
     vector2 clamp(width-1, height-1);
@@ -214,7 +195,7 @@ void SoftRenderer::triangle(vector4 *pts, IShader &shader) {
 
             if (retain) {
                 zbuffer[int(p.x+p.y*width)] = z;
-                Color color;
+                TGAColor color;
                 shader.fragment(bc, color);
                 set(p.x, p.y, color);
             }

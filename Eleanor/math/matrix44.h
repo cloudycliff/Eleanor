@@ -67,7 +67,7 @@ inline matrix44 matrix44::identity() {
     return m;
 }
 
-void matrix44::transpose() {
+inline void matrix44::transpose() {
     for (int i = 0; i < 3; i++)
         for (int j = i+1; j < 3; j++) {
             float t = m[i][j];
@@ -76,7 +76,7 @@ void matrix44::transpose() {
         }
 }
 
-void matrix44::inverse() {
+inline void matrix44::inverse() {
     float t[3][6];
     int i, j, k;
     float f;

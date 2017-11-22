@@ -34,10 +34,6 @@ SDL_Renderer *sdlRenderer = NULL;
 bool quit = false;
 bool enableZ = true;
 
-Color red(255, 0, 0);
-Color green(0, 255, 0);
-Color blue(0, 0, 255);
-
 
 vector3 light_dir(3, 2, 1);
 
@@ -85,7 +81,7 @@ struct TestShader : public IShader {
         return gl_Position;
     }
     
-    virtual void fragment(vector3 bc, Color &c) {
+    virtual void fragment(vector3 bc, TGAColor &c) {
         vector3 n;
         n.x = normals[0].x*bc.x + normals[1].x*bc.y + normals[2].x*bc.z;
         n.y = normals[0].y*bc.x + normals[1].y*bc.y + normals[2].y*bc.z;
@@ -96,10 +92,7 @@ struct TestShader : public IShader {
         uv.y = uvs[0].y*bc.x + uvs[1].y*bc.y + uvs[2].y*bc.z;
         
         float diff = std::max(0.0f, n*light_dir);
-        TGAColor cc = modelObj.getDiffuse(uv.x, uv.y);
-        c.r = cc.bgra[2]*diff;
-        c.g = cc.bgra[1]*diff;
-        c.b = cc.bgra[0]*diff;
+        c = modelObj.getDiffuse(uv.x, uv.y)*diff;
     }
 };
 

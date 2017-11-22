@@ -43,6 +43,14 @@ struct TGAColor {
             bgra[i] = 0;
         }
     }
+    
+    TGAColor operator *(float intensity) const {
+        TGAColor res = *this;
+        if (intensity > 1.0f) intensity = 1.0f;
+        if (intensity < 0.0f) intensity = 0.0f;
+        for (int i=0; i<4; i++) res.bgra[i] = bgra[i]*intensity;
+        return res;
+    }
 };
 
 struct TGAImage {

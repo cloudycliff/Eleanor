@@ -16,6 +16,7 @@ struct matrix33 {
     
     matrix33();
     matrix33(const matrix44 &mm);
+    matrix33(const vector3 &v1, const vector3 &v2, const vector3 &v3);
     
     static matrix33 identity();
     
@@ -24,6 +25,7 @@ struct matrix33 {
     matrix33 operator *(matrix33 &mm);
     
     void transpose();
+    void inverse();
 };
 
 inline matrix33::matrix33() {
@@ -35,6 +37,14 @@ inline matrix33::matrix33(const matrix44 &mm) {
         for (int j=0; j<3; j++) {
             m[i][j] = mm.m[i][j];
         }
+    }
+}
+
+inline matrix33::matrix33(const vector3 &v1, const vector3 &v2, const vector3 &v3) {
+    for (int i=0; i<3; i++) {
+        m[i][0] = v1[i];
+        m[i][1] = v2[i];
+        m[i][2] = v3[i];
     }
 }
 
@@ -80,6 +90,25 @@ inline void matrix33::transpose() {
             m[i][j] = m[j][i];
             m[j][i] = t;
         }
+}
+
+inline void matrix33::inverse() {
+    int mat[3][3];
+    for (int i=0; i<3; i++)
+        for (int j=0; j<3; j++)
+            mat[i][j] = m[i][j];
+    
+    float determinant = 0;
+    
+    //finding determinant
+    for(int i = 0; i < 3; i++)
+        determinant = determinant + (mat[0][i] * (mat[1][(i+1)%3] * mat[2][(i+2)%3] - mat[1][(i+2)%3] * mat[2][(i+1)%3]));
+    
+    for(int i = 0; i < 3; i++){
+        for(int j = 0; j < 3; j++)
+            m[i][j] = ((mat[(j+1)%3][(i+1)%3] * mat[(j+2)%3][(i+2)%3]) - (mat[(j+1)%3][(i+2)%3] * mat[(j+2)%3][(i+1)%3]))/ determinant;
+        
+    }
 }
 
 #endif /* matrix33_h */

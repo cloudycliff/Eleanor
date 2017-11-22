@@ -32,6 +32,12 @@ struct TGAColor {
     unsigned char bgra[4];
     unsigned char bytespp;
     
+    TGAColor(unsigned char R, unsigned char G, unsigned char B, unsigned char A=255) : bgra(), bytespp(4) {
+        bgra[0] = B;
+        bgra[1] = G;
+        bgra[2] = R;
+        bgra[3] = A;
+    }
     TGAColor() : bgra(), bytespp(1) {
         for (int i=0; i<4; i++) bgra[i] = 0;
     }
@@ -50,6 +56,15 @@ struct TGAColor {
         if (intensity < 0.0f) intensity = 0.0f;
         for (int i=0; i<4; i++) res.bgra[i] = bgra[i]*intensity;
         return res;
+    }
+    
+    TGAColor operator+ (const TGAColor &c) {
+        TGAColor cc(bgra, 4);
+        cc.bgra[0] += c.bgra[0];
+        cc.bgra[1] += c.bgra[1];
+        cc.bgra[2] += c.bgra[2];
+        cc.bgra[3] += c.bgra[3];
+        return cc;
     }
 };
 

@@ -22,10 +22,23 @@ struct vector3 {
     float length() const;
     vector3 &normalize();
     
+    vector3 operator +(const vector3 &vv) const;
     vector3 operator -(const vector3 &vv) const;
     float &operator [](const int index);
+    const float &operator [](const int index) const;
     const vector3 &operator =(const vector3 &vv);
     float operator *(const vector3 vv);
+    
+    vector3 &operator *(const float d) {
+        x *= d;
+        y *= d;
+        z *= d;
+        return *this;
+    }
+    
+    vector3 operator-(void) const {
+        return vector3(-x, -y, -z);
+    }
     
     void dump() {
         printf("%f %f %f\n", x, y, z);
@@ -49,11 +62,21 @@ inline vector3 &vector3::normalize() {
     return *this;
 }
 
+inline vector3 vector3::operator +(const vector3 &vv) const {
+    return vector3(x + vv.x, y + vv.y, z + vv.z);
+}
+
 inline vector3 vector3::operator -(const vector3 &vv) const {
     return vector3(x - vv.x, y - vv.y, z - vv.z);
 }
 
 inline float &vector3::operator [](const int index) {
+    if (index == 0) return x;
+    else if (index == 1) return y;
+    else return z;
+}
+
+inline const float &vector3::operator [](const int index) const {
     if (index == 0) return x;
     else if (index == 1) return y;
     else return z;
@@ -78,6 +101,10 @@ inline void vector3Cross(vector3 &out, const vector3 &v1, const vector3 &v2) {
 
 inline float vector3Dot(const vector3 &v1, const vector3 &v2) {
     return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
+
+vector3 reflect(const vector3 &in, vector3 &normal) {
+    return in - normal * (vector3Dot(in, normal) * 2);
 }
 
 #endif /* vector3_h */

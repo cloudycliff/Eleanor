@@ -95,28 +95,27 @@ inline void matrix33::transpose() {
 }
 
 inline void matrix33::inverse() {
-    int mat[3][3];
+    float mat[3][3];
     for (int i=0; i<3; i++)
         for (int j=0; j<3; j++)
             mat[i][j] = m[i][j];
-    
+
     float determinant = 0;
-    
-    //finding determinant
     for(int i = 0; i < 3; i++)
         determinant = determinant + (mat[0][i] * (mat[1][(i+1)%3] * mat[2][(i+2)%3] - mat[1][(i+2)%3] * mat[2][(i+1)%3]));
-    
+
     for(int i = 0; i < 3; i++){
         for(int j = 0; j < 3; j++)
             m[i][j] = ((mat[(j+1)%3][(i+1)%3] * mat[(j+2)%3][(i+2)%3]) - (mat[(j+1)%3][(i+2)%3] * mat[(j+2)%3][(i+1)%3]))/ determinant;
-        
+
     }
+
 }
 
 void matrix33::dump() {
     printf("%.2f  %.2f  %.2f\n", m[0][0], m[0][1], m[0][2]);
     printf("%.2f  %.2f  %.2f\n", m[1][0], m[1][1], m[1][2]);
-    printf("%.2f  %.2f  %.2f\n", m[2][0], m[2][1], m[2][2]);
+    printf("%.2f  %.2f  %.2f\n\n", m[2][0], m[2][1], m[2][2]);
 }
 
 #endif /* matrix33_h */

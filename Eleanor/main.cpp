@@ -35,13 +35,13 @@ bool quit = false;
 bool enableZ = true;
 
 
-vector3 light_dir(3, 2, 1);
+vector3 light_dir(-1, 0, 0);
 
 float cameraX = 3;
 float cameraY = 2;
 float cameraZ = 2;
 float speed = 1;
-float rotateAngle = 0.0f;
+float rotateAngle = 10.0f;
 vector3 center(0,0,0);
 vector3 up(0,1,0);
 vector3 camera(cameraX,cameraY,cameraZ);
@@ -117,7 +117,6 @@ struct TangentShader : public IShader {
         
         uvs[nthvert] = modelObj.getUV(idx.texcoord_index);
         
-        
         matrix33 normalMatrix = matrix33(mModel);
         normalMatrix.inverse();
         normalMatrix.transpose();
@@ -127,7 +126,9 @@ struct TangentShader : public IShader {
         T.normalize();
         vector3 N = normalMatrix * normal;
         N.normalize();
+        
         T = T - N * vector3Dot(T, N);
+        
         T.normalize();
         vector3 B;
         vector3Cross(B, N, T);
@@ -157,7 +158,7 @@ struct TangentShader : public IShader {
         normal.normalize();
 
         TGAColor color = modelObj.getDiffuse(uv.x, uv.y);
-        TGAColor ambient = color * 0.1;
+        TGAColor ambient = color * 0.2;
         
         vector3 tangentLightPos;
         tangentLightPos.x = tangentLightPoss[0].x*bc.x + tangentLightPoss[1].x*bc.y + tangentLightPoss[2].x*bc.z;
@@ -171,10 +172,12 @@ struct TangentShader : public IShader {
         tangentFragPos.x = tangentFragPoss[0].x*bc.x + tangentFragPoss[1].x*bc.y + tangentFragPoss[2].x*bc.z;
         tangentFragPos.y = tangentFragPoss[0].y*bc.x + tangentFragPoss[1].y*bc.y + tangentFragPoss[2].y*bc.z;
         tangentFragPos.z = tangentFragPoss[0].z*bc.x + tangentFragPoss[1].z*bc.y + tangentFragPoss[2].z*bc.z;
-        
+
         vector3 lightDir = tangentLightPos - tangentFragPos;
         lightDir.normalize();
+
         float diff = std::max(lightDir*normal, 0.0f);
+
         TGAColor diffuse = color * diff;
         
         vector3 viewDir = tangentViewPos - tangentFragPos;
@@ -184,8 +187,8 @@ struct TangentShader : public IShader {
         float spec = std::pow(std::max(normal*halfwayDir, 0.0f), 32.0f);
         
         TGAColor specular = TGAColor(32,32,32) * spec;
-        //c = ambient + diffuse + specular;
-        c = color;
+
+        c = ambient + diffuse + specular;
     }
 };
 
@@ -206,7 +209,7 @@ int main(int argc, const char * argv[]) {
     mViewport = viewport(SCREEN_WIDTH/8, SCREEN_HEIGHT/8, SCREEN_WIDTH*3/4, SCREEN_HEIGHT*3/4);
     light_dir.normalize();
     
-    TestShader shader;
+    TangentShader shader;
     
 #ifdef LOOP
     while (!quit) {

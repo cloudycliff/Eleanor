@@ -29,23 +29,11 @@ struct vector3 {
     const vector3 &operator =(const vector3 &vv);
     float operator *(const vector3 vv);
     
-    vector3 &operator *(const float d) {
-        x *= d;
-        y *= d;
-        z *= d;
-        return *this;
-    }
+    vector3 operator *(const float d);
     
-    vector3 &operator /(const float d) {
-        x /= d;
-        y /= d;
-        z /= d;
-        return *this;
-    }
+    vector3 operator /(const float d);
     
-    vector3 operator-(void) const {
-        return vector3(-x, -y, -z);
-    }
+    vector3 operator-(void) const;
     
     void dump() {
         printf("%f %f %f\n", x, y, z);
@@ -98,6 +86,26 @@ inline const vector3 &vector3::operator=(const vector3 &vv) {
 
 inline float vector3::operator *(const vector3 vv) {
     return x * vv.x + y * vv.y + z * vv.z;
+}
+
+inline vector3 vector3::operator *(const float d) {
+    vector3 v;
+    v.x = x * d;
+    v.y = y * d;
+    v.z = z * d;
+    return v;
+}
+
+inline vector3 vector3::operator /(const float d) {
+    vector3 v;
+    v.x = x / d;
+    v.y = y / d;
+    v.z = z / d;
+    return v;
+}
+
+inline vector3 vector3::operator-(void) const {
+    return vector3(-x, -y, -z);
 }
 
 inline void vector3Cross(vector3 &out, const vector3 &v1, const vector3 &v2) {

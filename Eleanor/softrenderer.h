@@ -154,8 +154,6 @@ vector3 SoftRenderer::barycentric(vector4 *pts, vector2 p) {
     vector3 u;
     vector3 s1 = vector3(pts[2].x/pts[2].w-pts[0].x/pts[0].w, pts[1].x/pts[1].w-pts[0].x/pts[0].w, pts[0].x/pts[0].w-p.x);
     vector3 s2 = vector3(pts[2].y/pts[2].w-pts[0].y/pts[0].w, pts[1].y/pts[1].w-pts[0].y/pts[0].w, pts[0].y/pts[0].w-p.y);
-//    vector3 s1 = vector3(pts[2].x-pts[0].x, pts[1].x-pts[0].x, pts[0].x-p.x);
-//    vector3 s2 = vector3(pts[2].y-pts[0].y, pts[1].y-pts[0].y, pts[0].y-p.y);
     
     vector3Cross(u, s1, s2);
     if (std::abs(u.z) > 1e-2) return vector3(1.0f-(u.x+u.y)/u.z, u.y/u.z, u.x/u.z);
@@ -183,10 +181,13 @@ void SoftRenderer::triangle(vector4 *pts, IShader &shader) {
 
             if (bc.x<0 || bc.y<0 || bc.z<0) continue;
             
+            vector3 bc_clip = vector3(bc.x/pts[0].w, bc.y/pts[1].w, bc.z/pts[2].w);
+            bc_clip = bc_clip / (bc_clip.x + bc_clip.y + bc_clip.z);
+            
             float z = 0, w = 0;
             for (int i=0; i<3; i++) {
-                z += pts[i].z*bc[i];
-                w += pts[i].w*bc[i];
+                z += pts[i].z*bc_clip[i];
+                w += pts[i].w*bc_clip[i];
             }
             z = std::max(0, std::min(255, int(z/w+0.5)));
             
@@ -196,7 +197,7 @@ void SoftRenderer::triangle(vector4 *pts, IShader &shader) {
             if (retain) {
                 zbuffer[int(p.x+p.y*width)] = z;
                 TGAColor color;
-                shader.fragment(bc, color);
+                shader.fragment(bc_clip, color);
                 set(p.x, p.y, color);
             }
         }

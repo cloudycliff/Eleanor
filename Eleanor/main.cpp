@@ -37,9 +37,9 @@ bool enableZ = true;
 
 vector3 light_dir(3, 2, 1);
 
-float cameraX = 0;
-float cameraY = 0;
-float cameraZ = 10;
+float cameraX = 3;
+float cameraY = 2;
+float cameraZ = 2;
 float speed = 1;
 float rotateAngle = 0.0f;
 vector3 center(0,0,0);
@@ -50,6 +50,7 @@ vector3 camera(cameraX,cameraY,cameraZ);
 
 //std::string inputfile = "obj/floor.obj";
 std::string inputfile = "obj/african_head/african_head.obj";
+//std::string inputfile = "obj/brickwall.obj";
 
 Model modelObj(inputfile);
 
@@ -122,7 +123,6 @@ struct TangentShader : public IShader {
         normalMatrix.transpose();
         
         vector3 tangent = modelObj.getTangent(nface);
-        
         vector3 T = normalMatrix * tangent;
         T.normalize();
         vector3 N = normalMatrix * normal;
@@ -155,7 +155,7 @@ struct TangentShader : public IShader {
         
         vector3 normal = modelObj.getNormal(uv.x, uv.y);
         normal.normalize();
-        
+
         TGAColor color = modelObj.getDiffuse(uv.x, uv.y);
         TGAColor ambient = color * 0.1;
         
@@ -178,13 +178,14 @@ struct TangentShader : public IShader {
         TGAColor diffuse = color * diff;
         
         vector3 viewDir = tangentViewPos - tangentFragPos;
-        vector3 reflectDir = reflect(-lightDir, normal);
+        //vector3 reflectDir = reflect(-lightDir, normal);
         vector3 halfwayDir = lightDir + viewDir;
         halfwayDir.normalize();
         float spec = std::pow(std::max(normal*halfwayDir, 0.0f), 32.0f);
         
         TGAColor specular = TGAColor(32,32,32) * spec;
-        c = ambient + diffuse + specular;
+        //c = ambient + diffuse + specular;
+        c = color;
     }
 };
 
@@ -205,7 +206,7 @@ int main(int argc, const char * argv[]) {
     mViewport = viewport(SCREEN_WIDTH/8, SCREEN_HEIGHT/8, SCREEN_WIDTH*3/4, SCREEN_HEIGHT*3/4);
     light_dir.normalize();
     
-    TangentShader shader;
+    TestShader shader;
     
 #ifdef LOOP
     while (!quit) {

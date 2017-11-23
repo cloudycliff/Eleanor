@@ -20,6 +20,8 @@ struct matrix33 {
     
     static matrix33 identity();
     
+    void dump();
+    
     float &operator ()(const int x, const int y);
     vector3 operator *(const vector3 &vv);
     matrix33 operator *(matrix33 &mm);
@@ -109,6 +111,12 @@ inline void matrix33::inverse() {
             m[i][j] = ((mat[(j+1)%3][(i+1)%3] * mat[(j+2)%3][(i+2)%3]) - (mat[(j+1)%3][(i+2)%3] * mat[(j+2)%3][(i+1)%3]))/ determinant;
         
     }
+}
+
+void matrix33::dump() {
+    printf("%.2f  %.2f  %.2f\n", m[0][0], m[0][1], m[0][2]);
+    printf("%.2f  %.2f  %.2f\n", m[1][0], m[1][1], m[1][2]);
+    printf("%.2f  %.2f  %.2f\n", m[2][0], m[2][1], m[2][2]);
 }
 
 #endif /* matrix33_h */

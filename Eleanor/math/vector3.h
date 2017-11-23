@@ -36,6 +36,13 @@ struct vector3 {
         return *this;
     }
     
+    vector3 &operator /(const float d) {
+        x /= d;
+        y /= d;
+        z /= d;
+        return *this;
+    }
+    
     vector3 operator-(void) const {
         return vector3(-x, -y, -z);
     }

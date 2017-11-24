@@ -40,6 +40,7 @@
 		91A2BA601FB2D90500B203F5 /* SDL2_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL2_ttf.framework; path = ../../../Library/Frameworks/SDL2_ttf.framework; sourceTree = "<group>"; };
 		91A2BA621FB33D3E00B203F5 /* matrix44.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = matrix44.h; sourceTree = "<group>"; };
 		91A2BA631FB4641100B203F5 /* vector4.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vector4.h; sourceTree = "<group>"; };
+		91E440331FC825F0005F7C5A /* camera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = camera.h; sourceTree = "<group>"; };
 		91F4F0331FC528DD007EB54E /* matrix33.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = matrix33.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -84,6 +85,7 @@
 				911840CC1FBA9DA700197306 /* ModelLoader.h */,
 				910518861FBC3FBB00ACB6ED /* TransformUtils.h */,
 				910518871FBD6C7F00ACB6ED /* TGAImage.h */,
+				91E440331FC825F0005F7C5A /* camera.h */,
 			);
 			path = Eleanor;
 			sourceTree = "<group>";

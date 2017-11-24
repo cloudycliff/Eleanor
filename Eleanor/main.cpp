@@ -20,6 +20,7 @@
 #include "math/math.h"
 #include "TransformUtils.h"
 #include "TGAImage.h"
+#include "camera.h"
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
@@ -40,11 +41,11 @@ vector3 light_dir(1, 1, 1);
 float cameraX = 0;
 float cameraY = -1;
 float cameraZ = 3;
+
 float speed = 1;
 float rotateAngle = 10.0f;
-vector3 center(0,0,0);
-vector3 up(0,1,0);
-vector3 camera(cameraX,cameraY,cameraZ);
+
+Camera camera;
 
 #define LOOP
 
@@ -137,7 +138,7 @@ struct TangentShader : public IShader {
         TBN.transpose();
         
         tangentLightPoss[nthvert] = TBN * light_dir;
-        tangentViewPoss[nthvert] = TBN * camera;
+        tangentViewPoss[nthvert] = TBN * camera.pos;
         tangentFragPoss[nthvert] = TBN * fragPos;
         
         vector4 gl_Position = mViewport * mMVP * vector4(pos, 1.0f);
@@ -221,7 +222,10 @@ int main(int argc, const char * argv[]) {
         matrix44 rotate = rotateMatrix(0.0f, 1.0f, 0.0f, rotateAngle);
         matrix44 translate = translateMatrix(0.0f, 0.0f, 0.0f);
         
-        mView = lookat(camera, center, up);
+        
+        camera.updatePos(cameraX, cameraY, cameraZ);
+        
+        mView = camera.lookAt();
         
         mProjection = projectionFOV(90.0f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.1f, 500.0f);
 

@@ -9,6 +9,8 @@
 #ifndef math_h
 #define math_h
 
+const float PI = 3.1415926;
+
 #include "vector2.h"
 #include "vector3.h"
 #include "vector4.h"

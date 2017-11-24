@@ -35,11 +35,11 @@ bool quit = false;
 bool enableZ = true;
 
 
-vector3 light_dir(-1, 0, 0);
+vector3 light_dir(1, 1, 1);
 
-float cameraX = 3;
-float cameraY = 2;
-float cameraZ = 2;
+float cameraX = 0;
+float cameraY = -1;
+float cameraZ = 3;
 float speed = 1;
 float rotateAngle = 10.0f;
 vector3 center(0,0,0);
@@ -206,7 +206,7 @@ int main(int argc, const char * argv[]) {
     FPSDisplay fpsDisplay;
     fpsDisplay.init(sdlRenderer);
     
-    mViewport = viewport(SCREEN_WIDTH/8, SCREEN_HEIGHT/8, SCREEN_WIDTH*3/4, SCREEN_HEIGHT*3/4);
+    mViewport = viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     light_dir.normalize();
     
     TangentShader shader;
@@ -218,17 +218,17 @@ int main(int argc, const char * argv[]) {
         
         renderer.enableZTest(enableZ);
         
-        
         matrix44 rotate = rotateMatrix(0.0f, 1.0f, 0.0f, rotateAngle);
         matrix44 translate = translateMatrix(0.0f, 0.0f, 0.0f);
         
         mView = lookat(camera, center, up);
-        mProjection = projection(-1.0f/(camera-center).length());
         
+        mProjection = projectionFOV(90.0f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.1f, 500.0f);
+
         mModel = translate * rotate;
         
         mMVP = mProjection * mView * mModel;
-        
+
         mMVP_IT = mProjection * mView * mModel;
         mMVP_IT.inverse();
         mMVP_IT.transpose();

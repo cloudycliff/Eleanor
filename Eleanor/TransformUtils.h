@@ -52,6 +52,36 @@ matrix44 projection(float coeff) {
     return projection;
 }
 
+matrix44 projectionFOV(float fovy, float aspect, float near, float far) {
+    matrix44 m;
+    float d2r = PI/180.0f;
+    float zoomy = 1.0f / (float)tan(d2r * fovy * 0.5f);
+    float zoomx = zoomy * aspect;
+    float nmf = near - far;
+    m.m[0][0] = zoomx;
+    m.m[1][1] = zoomy;
+    m.m[2][2] = (near+far)/nmf;
+    m.m[2][3] = -1.0f;
+    m.m[3][2] = 2*far*near/nmf;
+    m.m[3][3] = 1.0f; //should this be 1 or 0 ?
+
+    return m;
+}
+
+matrix44 orthogonal(float l, float r, float b, float t, float zn, float zf) {
+    matrix44 m;
+    m.m[0][0] = 2.0f / (r - l);
+    m.m[1][1] = 2.0f / (t - b);
+    m.m[2][2] = 1.0f / (zf - zn);
+    m.m[3][0] = (l+r)/(l-r);
+    m.m[3][1] = (t+b)/(b-t);
+    m.m[3][2] = zn / (zn-zf);
+    m.m[3][3] = 1.0f;
+    m.m[0][1] = m.m[0][2] = m.m[0][3] = m.m[1][0] = m.m[1][2] = m.m[1][3] = 0.0f;
+    m.m[2][0] = m.m[2][1] = m.m[2][3] = 0.0f;
+    return m;
+}
+
 matrix44 scaleMatrix(float x, float y, float z) {
     matrix44 m;
     m(0, 0) = x;

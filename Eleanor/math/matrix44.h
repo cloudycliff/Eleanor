@@ -68,8 +68,8 @@ inline matrix44 matrix44::identity() {
 }
 
 inline void matrix44::transpose() {
-    for (int i = 0; i < 3; i++)
-        for (int j = i+1; j < 3; j++) {
+    for (int i = 0; i < 4; i++)
+        for (int j = i+1; j < 4; j++) {
             float t = m[i][j];
             m[i][j] = m[j][i];
             m[j][i] = t;

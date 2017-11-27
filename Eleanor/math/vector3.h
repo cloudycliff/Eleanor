@@ -122,4 +122,14 @@ vector3 reflect(const vector3 &in, vector3 &normal) {
     return in - normal * (vector3Dot(in, normal) * 2);
 }
 
+vector3 normalize(const vector3 &in) {
+    const float len = in.length();
+    const float invLen = 1.0f/len;
+    vector3 v(in);
+    v.x *= invLen;
+    v.y *= invLen;
+    v.z *= invLen;
+    return v;
+}
+
 #endif /* vector3_h */

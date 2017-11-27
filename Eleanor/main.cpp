@@ -22,8 +22,8 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 //std::string inputfile = "obj/floor.obj";
-std::string inputfile = "obj/african_head/african_head.obj";
-//std::string inputfile = "obj/brickwall.obj";
+//std::string inputfile = "obj/african_head/african_head.obj";
+std::string inputfile = "obj/brickwall.obj";
 
 
 int main(int argc, const char * argv[]) {
@@ -31,8 +31,7 @@ int main(int argc, const char * argv[]) {
     Viewer viewer(SCREEN_WIDTH, SCREEN_HEIGHT);
     viewer.init();
     
-    Camera camera(0, -1, 3);
-    camera.init(90.0f, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, 0.1f, 500.0f);
+    Camera camera(vector3(0,0,3));
     
     Scene scene;
     scene.camera = &camera;
@@ -40,7 +39,7 @@ int main(int argc, const char * argv[]) {
     Model modelObj(inputfile);
     ModelNode modelNode;
     modelNode.model = &modelObj;
-    modelNode.angle = 30.0f;
+    modelNode.angle = 0.0f;
     
     scene.modelNode = &modelNode;
     

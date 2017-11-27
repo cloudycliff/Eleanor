@@ -12,43 +12,110 @@
 #include "math/math.h"
 #include "TransformUtils.h"
 
-struct Camera {
+float radians(float degrees) {
+    return degrees * 0.01745329251994329576923690768489;
+}
 
-    vector3 center;
-    vector3 up;
-    vector3 pos;
+enum Camera_Movement {
+    FORWARD,
+    BACKWARD,
+    LEFT,
+    RIGHT
+};
+
+const float YAW = -90.0f;
+const float PITCH = 0.0f;
+const float SPEED = 1.0f;
+const float SENSITIVITY = 0.1f;
+const float ZOOM = 45.0f;
+
+class Camera {
+public:
+    vector3 Position;
+    vector3 Front;
+    vector3 Up;
+    vector3 Right;
+    vector3 WorldUp;
     
-    float fovy;
-    float aspect;
-    float near;
-    float far;
+    float Yaw;
+    float Pitch;
     
-    Camera(float posX, float posY, float posZ) {
-        center = vector3(0,0,0);
-        up = vector3(0,1,0);
-        pos = vector3(posX,posY,posZ);
+    float MovementSpeed;
+    float MouseSensitivity;
+    float Zoom;
+    
+    // Constructor with vectors
+    Camera(vector3 position = vector3(0.0f, 0.0f, 0.0f), vector3 up = vector3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(vector3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    {
+        Position = position;
+        WorldUp = up;
+        Yaw = yaw;
+        Pitch = pitch;
+        updateCameraVectors();
+    }
+    // Constructor with scalar values
+    Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(vector3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
+    {
+        Position = vector3(posX, posY, posZ);
+        WorldUp = vector3(upX, upY, upZ);
+        Yaw = yaw;
+        Pitch = pitch;
+        updateCameraVectors();
     }
     
-    void init(float fovy, float aspect, float near, float far) {
-        this->fovy = fovy;
-        this->aspect = aspect;
-        this->near = near;
-        this->far = far;
+    matrix44 GetViewMatrix() {
+        return lookat(Position, Position+Front, Up);
     }
     
-    matrix44 lookAt() {
-        return lookat(pos, center, up);
+    void ProcessKeyboard(Camera_Movement direction, float deltaTime) {
+        float velocity = MovementSpeed * deltaTime;
+        if (direction == FORWARD)
+            Position = Position + Front * velocity;
+        if (direction == BACKWARD)
+            Position = Position - Front * velocity;
+        if (direction == LEFT)
+            Position = Position - Right * velocity;
+        if (direction == RIGHT)
+            Position = Position + Right * velocity;
     }
     
-    matrix44 projection() {
-        return projectionFOV(fovy, aspect, near, far);
+    void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true) {
+        xoffset *= MouseSensitivity;
+        yoffset *= MouseSensitivity;
+        
+        Yaw += xoffset;
+        Pitch += yoffset;
+        
+        if (constrainPitch) {
+            if (Pitch > 89.0f) Pitch = 89.0f;
+            if (Pitch < -89.0f) Pitch = -89.0f;
+        }
+        
+        updateCameraVectors();
     }
     
-    void updatePos(float dx, float dy, float dz) {
-        pos.x += dx;
-        pos.y += dy;
-        pos.z += dz;
+    void ProcessMouseScroll(float yoffset) {
+        if (Zoom >= 1.0f && Zoom <= 45.0f) Zoom -= yoffset;
+        if (Zoom <= 1.0f) Zoom = 1.0f;
+        if (Zoom >= 45.0f) Zoom = 45.0f;
+    }
+    
+private:
+    void updateCameraVectors() {
+        vector3 front;
+        front.x = cos(radians(Yaw)) * cos(radians(Pitch));
+        front.y = sin(radians(Pitch));
+        front.z = sin(radians(Yaw)) * cos(radians(Pitch));
+        
+        Front = normalize(front);
+        vector3Cross(Right, Front, WorldUp);
+        Right.normalize();
+
+        vector3Cross(Up, Right, Front);
+        Up.normalize();
     }
 };
+
+
 
 #endif /* camera_h */

@@ -102,7 +102,7 @@ struct TangentShader : public IShader {
         TBN.transpose();
         
         tangentLightPoss[nthvert] = TBN * (*light);
-        tangentViewPoss[nthvert] = TBN * camera->pos;
+        tangentViewPoss[nthvert] = TBN * camera->Position;
         tangentFragPoss[nthvert] = TBN * fragPos;
         
         vector4 gl_Position = transforms->viewport * transforms->MVP * vector4(pos, 1.0f);

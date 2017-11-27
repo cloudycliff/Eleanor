@@ -42,7 +42,6 @@ private:
     TestShader shader;
     
     
-    float speed = 1;
     float rotateAngle = 10.0f;
     
     
@@ -68,9 +67,7 @@ void Viewer::init() {
     
     fpsDisplay.init(sdlRenderer);
     
-    
     transforms.viewport = viewport(0, 0, width, height);
-    
 }
 
 void Viewer::start() {
@@ -103,8 +100,8 @@ void Viewer::update() {
     matrix44 translate = translateMatrix(scene->modelNode->position);
     transforms.model = translate * rotate;
     
-    transforms.view = scene->camera->lookAt();
-    transforms.projection = scene->camera->projection();
+    transforms.view = scene->camera->GetViewMatrix();
+    transforms.projection = projectionFOV(90.0f, (float)width/(float)height, 0.1f, 100.f);
     
     transforms.update();
     
@@ -128,13 +125,15 @@ void Viewer::handleEvent() {
             int k = e.key.keysym.scancode;
             
             if (k == SDL_SCANCODE_ESCAPE) shouldQuit = true;
-            else if (k == SDL_SCANCODE_W) scene->camera->updatePos(0, speed, 0);
-            else if (k == SDL_SCANCODE_S) scene->camera->updatePos(0, -speed, 0);
-            else if (k == SDL_SCANCODE_A) scene->camera->updatePos(speed, 0, 0);
-            else if (k == SDL_SCANCODE_D) scene->camera->updatePos(-speed, 0, 0);
+            else if (k == SDL_SCANCODE_W) scene->camera->ProcessKeyboard(FORWARD, fpsDisplay.getDeltaTime()/10000.0);
+            else if (k == SDL_SCANCODE_S) scene->camera->ProcessKeyboard(BACKWARD, fpsDisplay.getDeltaTime()/10000.0);
+            else if (k == SDL_SCANCODE_A) scene->camera->ProcessKeyboard(LEFT, fpsDisplay.getDeltaTime()/10000.0);
+            else if (k == SDL_SCANCODE_D) scene->camera->ProcessKeyboard(RIGHT, fpsDisplay.getDeltaTime()/10000.0);
             else if (k == SDL_SCANCODE_Q) rotateAngle += 0.1;
             else if (k == SDL_SCANCODE_E) rotateAngle -= 0.1;
             else if (k == SDL_SCANCODE_Z) enableZ = !enableZ;
+        } else if (e.type == SDL_MOUSEMOTION) {
+            scene->camera->ProcessMouseMovement(e.motion.xrel, e.motion.yrel);
         };
     }
 }

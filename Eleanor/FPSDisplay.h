@@ -24,6 +24,7 @@ private:
     float fps = 0.0f;
     int frame = 0;
     Uint32 start;
+    Uint32 deltaTime = 0;
     
 public:
     
@@ -43,7 +44,8 @@ public:
     
     void update(SDL_Renderer *sdlRenderer) {
         frame++;
-        fps = frame * 1000 / (float)(SDL_GetTicks() - start);
+        deltaTime = SDL_GetTicks() - start;
+        fps = frame * 1000 / (float)deltaTime;
         
         char *f = new char[10];
         sprintf(f, "FPS: %.3f", fps);
@@ -57,6 +59,10 @@ public:
         SDL_FreeSurface(surface);
         TTF_CloseFont(font);
         SDL_DestroyTexture(texture);
+    }
+    
+    Uint32 getDeltaTime() {
+        return deltaTime;
     }
 };
 

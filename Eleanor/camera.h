@@ -13,24 +13,41 @@
 #include "TransformUtils.h"
 
 struct Camera {
+
     vector3 center;
     vector3 up;
     vector3 pos;
     
-    Camera() {
+    float fovy;
+    float aspect;
+    float near;
+    float far;
+    
+    Camera(float posX, float posY, float posZ) {
         center = vector3(0,0,0);
         up = vector3(0,1,0);
-        pos = vector3(1,1,1);
+        pos = vector3(posX,posY,posZ);
+    }
+    
+    void init(float fovy, float aspect, float near, float far) {
+        this->fovy = fovy;
+        this->aspect = aspect;
+        this->near = near;
+        this->far = far;
     }
     
     matrix44 lookAt() {
         return lookat(pos, center, up);
     }
     
-    void updatePos(float x, float y, float z) {
-        pos.x = x;
-        pos.y = y;
-        pos.z = z;
+    matrix44 projection() {
+        return projectionFOV(fovy, aspect, near, far);
+    }
+    
+    void updatePos(float dx, float dy, float dz) {
+        pos.x += dx;
+        pos.y += dy;
+        pos.z += dz;
     }
 };
 

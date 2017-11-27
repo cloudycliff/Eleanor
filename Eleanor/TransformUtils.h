@@ -91,6 +91,14 @@ matrix44 scaleMatrix(float x, float y, float z) {
     return m;
 }
 
+matrix44 translateMatrix(vector3 v) {
+    matrix44 m = matrix44::identity();
+    m(0, 3) = v.x;
+    m(1, 3) = v.y;
+    m(2, 3) = v.z;
+    return m;
+}
+
 matrix44 translateMatrix(float x, float y, float z) {
     matrix44 m = matrix44::identity();
     m(0, 3) = x;

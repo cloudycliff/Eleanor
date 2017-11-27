@@ -41,6 +41,10 @@
 		91A2BA621FB33D3E00B203F5 /* matrix44.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = matrix44.h; sourceTree = "<group>"; };
 		91A2BA631FB4641100B203F5 /* vector4.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vector4.h; sourceTree = "<group>"; };
 		91E440331FC825F0005F7C5A /* camera.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = camera.h; sourceTree = "<group>"; };
+		91E440341FCBC322005F7C5A /* transform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = transform.h; sourceTree = "<group>"; };
+		91E440351FCBEB34005F7C5A /* shaders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = shaders.h; sourceTree = "<group>"; };
+		91E440361FCC120F005F7C5A /* viewer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = viewer.h; sourceTree = "<group>"; };
+		91E440371FCC3178005F7C5A /* scene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = scene.h; sourceTree = "<group>"; };
 		91F4F0331FC528DD007EB54E /* matrix33.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = matrix33.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -86,6 +90,10 @@
 				910518861FBC3FBB00ACB6ED /* TransformUtils.h */,
 				910518871FBD6C7F00ACB6ED /* TGAImage.h */,
 				91E440331FC825F0005F7C5A /* camera.h */,
+				91E440341FCBC322005F7C5A /* transform.h */,
+				91E440351FCBEB34005F7C5A /* shaders.h */,
+				91E440361FCC120F005F7C5A /* viewer.h */,
+				91E440371FCC3178005F7C5A /* scene.h */,
 			);
 			path = Eleanor;
 			sourceTree = "<group>";

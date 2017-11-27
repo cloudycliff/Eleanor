@@ -13,6 +13,7 @@ struct matrix44 {
     float m[4][4];
     
     matrix44();
+    matrix44(const matrix44 &mm);
     
     static matrix44 identity();
     
@@ -28,6 +29,12 @@ struct matrix44 {
 
 inline matrix44::matrix44() {
     memset(m, 0, sizeof(m));
+}
+
+inline matrix44::matrix44(const matrix44 &mm) {
+    for (int i=0; i<4; i++)
+        for (int j=0; j<4; j++)
+            m[i][j] = mm.m[i][j];
 }
 
 inline float &matrix44::operator ()(const int x, const int y) {

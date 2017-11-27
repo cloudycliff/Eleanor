@@ -13,11 +13,8 @@
 #include "math/math.h"
 #include "ModelLoader.h"
 #include "TGAImage.h"
+#include "shaders.h"
 
-struct IShader {
-    virtual vector4 vertex(int nface, int nthvert) = 0;
-    virtual void fragment(vector3 bc, TGAColor &c) = 0;
-};
 
 class SoftRenderer {
 private:

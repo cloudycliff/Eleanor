@@ -26,6 +26,7 @@ public:
     
     void setRenderer(SoftRenderer *r);
     void setScene(Scene *s);
+    void setShader(IShader *s);
     
 private:
     int width, height;
@@ -39,7 +40,7 @@ private:
     Scene *scene;
     Transforms transforms;
     
-    TestShader shader;
+    IShader *shader;
     
     
     float rotateAngle = 10.0f;
@@ -71,14 +72,13 @@ void Viewer::init() {
 }
 
 void Viewer::start() {
-    shader.modelObj = scene->modelNode->model;
-    shader.transforms = &transforms;
-    shader.light = scene->light;
-    shader.camera = scene->camera;
+    shader->modelObj = scene->modelNode->model;
+    shader->transforms = &transforms;
+    shader->light = scene->light;
+    shader->camera = scene->camera;
     
-    while (!shouldQuit) {
+    while (!shouldQuit)
         update();
-    }
     
     fpsDisplay.release();
     closeSDL();
@@ -101,14 +101,18 @@ void Viewer::update() {
     transforms.model = translate * rotate;
     
     transforms.view = scene->camera->GetViewMatrix();
-    transforms.projection = projectionFOV(90.0f, (float)width/(float)height, 0.1f, 100.f);
+    transforms.projection = projectionFOV(scene->camera->Zoom, (float)width/(float)height, 0.1f, 1000.f);
     
     transforms.update();
     
-    //wireframe(attrib, shapes, renderer);
-    //triangle(pts, frameBuffer, red);
-    //model(attrib, shapes, renderer, m);
-    renderer->model(*scene->modelNode->model, shader);
+    //renderer->line(100, 100, 500, 600, TGAColor(255,0,0));
+    
+    //vector3 pts[3] = {vector3(10,10,0), vector3(100,320,0), vector3(490,460,0)};
+    //renderer->triangle(pts, TGAColor(0,255,0));
+    
+    //renderer->wireframe(*scene->modelNode->model, TGAColor(0,0,255));
+    
+    renderer->model(*scene->modelNode->model, *shader);
     
     renderer->draw(sdlRenderer);
     
@@ -134,7 +138,9 @@ void Viewer::handleEvent() {
             else if (k == SDL_SCANCODE_Z) enableZ = !enableZ;
         } else if (e.type == SDL_MOUSEMOTION) {
             scene->camera->ProcessMouseMovement(e.motion.xrel, e.motion.yrel);
-        };
+        } else if (e.type == SDL_MOUSEWHEEL) {
+            scene->camera->ProcessMouseScroll(e.wheel.y);
+        }
     }
 }
 
@@ -144,6 +150,10 @@ void Viewer::setRenderer(SoftRenderer *r) {
 
 void Viewer::setScene(Scene *s) {
     this->scene = s;
+}
+
+void Viewer::setShader(IShader *s) {
+    this->shader = s;
 }
 
 bool Viewer::initSDL(const char *title) {

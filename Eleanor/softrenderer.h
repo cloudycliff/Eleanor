@@ -47,7 +47,7 @@ public:
         _enableZTest = z;
     }
     
-    bool set(int x, int y, TGAColor &c) {
+    bool set(int x, int y, const TGAColor &c) {
         if (x<0 || x>=width || y<0 || y>=height) return false;
         
         memcpy(buffer+(x+y*width)*bytespp, c.bgra, bytespp);
@@ -75,14 +75,16 @@ public:
         }
     }
     
-    void triangle(vector3 *pts, TGAColor &color);
+    void triangle(vector3 *pts, const TGAColor &color);
     void triangle(vector4 *pts, IShader &shader);
-    void line(int x0, int y0, int x1, int y1, TGAColor &color);
+    void line(int x0, int y0, int x1, int y1, const TGAColor &color);
     
     void model(Model &modelObj, IShader &shader);
+    
+    void wireframe(Model &modelObj, const TGAColor &color);
 };
 
-void SoftRenderer::line(int x0, int y0, int x1, int y1, TGAColor &color) {
+void SoftRenderer::line(int x0, int y0, int x1, int y1, const TGAColor &color) {
     
     bool steep = false;
     if (std::abs(x0-x1)<std::abs(y0-y1)) {
@@ -120,7 +122,7 @@ vector3 SoftRenderer::barycentric(vector3 *pts, vector2 p) {
     return vector3(1.0f-(u.x+u.y)/u.z, u.y/u.z, u.x/u.z);
 }
 
-void SoftRenderer::triangle(vector3 *pts, TGAColor &color) {
+void SoftRenderer::triangle(vector3 *pts, const TGAColor &color) {
     vector2 bboxmin(width-1, height-1);
     vector2 bboxmax(0, 0);
     vector2 clamp(width-1, height-1);
@@ -138,7 +140,7 @@ void SoftRenderer::triangle(vector3 *pts, TGAColor &color) {
             
             float z = 0;
             for (int i=0; i<3; i++) z += pts[i][2]*bc[i];
-            if (zbuffer[int(p.x+p.y*width)] < z) {
+            if (zbuffer[int(p.x+p.y*width)] >= z) {
                 zbuffer[int(p.x+p.y*width)] = z;
                 set(p.x, p.y, color);
             }
@@ -170,8 +172,8 @@ void SoftRenderer::triangle(vector4 *pts, IShader &shader) {
 
     vector2 p;
     int x, y;
-    for (x=bboxmin.x; x <= bboxmax.x; x++) {
-        for (y=bboxmin.y; y <= bboxmax.y; y++) {
+    for (x = bboxmin.x; x <= bboxmax.x; x++) {
+        for (y = bboxmin.y; y <= bboxmax.y; y++) {
             p.x = x;
             p.y = y;
             vector3 bc = barycentric(pts, p);
@@ -186,7 +188,7 @@ void SoftRenderer::triangle(vector4 *pts, IShader &shader) {
                 z += pts[i].z*bc_clip[i];
                 w += pts[i].w*bc_clip[i];
             }
-            z = std::max(0, std::min(255, int(z/w+0.5)));
+            z = z/w;
             
             bool retain = false;
             if (!_enableZTest || (_enableZTest && zbuffer[int(p.x+p.y*width)] >= z)) retain = true;
@@ -212,94 +214,29 @@ void SoftRenderer::model(Model &modelObj, IShader &shader) {
         
         triangle(pts, shader);
     }
-
 }
 
-/*
-void wireframe(tinyobj::attrib_t attrib, std::vector<tinyobj::shape_t> shapes, SoftRenderer &buffer) {
-    
-    int w = 800;
-    int h = 600;
-    Color blue(0,0,255);
-    
-    for (size_t s = 0; s < shapes.size(); s++) {
-        for (size_t f = 0; f < shapes[s].mesh.indices.size()/3; f++) {
-            tinyobj::index_t idx0 = shapes[s].mesh.indices[3*f + 0];
-            tinyobj::index_t idx1 = shapes[s].mesh.indices[3*f + 1];
-            tinyobj::index_t idx2 = shapes[s].mesh.indices[3*f + 2];
+void SoftRenderer::wireframe(Model &modelObj, const TGAColor &color) {
+    for (int f = 0; f < modelObj.getIndexSize()/3; f++) {
+        
+        vector3 v[3];
+        for (int k = 0; k < 3; k++) {
+            tinyobj::index_t idx = modelObj.getIndex(f, k);
+            v[k] = modelObj.getVertex(idx.vertex_index);
+        }
+        
+        for (int k = 0; k < 3; k++) {
+            vector3 v0 = v[k];
+            vector3 v1 = v[(k+1)%3];
             
-            float v[3][3];
-            int f0 = idx0.vertex_index;
-            int f1 = idx1.vertex_index;
-            int f2 = idx2.vertex_index;
-            for (int k = 0; k < 3; k++) {
-                v[0][k] = attrib.vertices[3 * f0 + k];
-                v[1][k] = attrib.vertices[3 * f1 + k];
-                v[2][k] = attrib.vertices[3 * f2 + k];
-            }
+            int x0 = (v0[0]+1.0)*width/2.0;
+            int y0 = (-v0[1]+1.0)*height/2.0;
+            int x1 = (v1[0]+1.0)*width/2.0;
+            int y1 = (-v1[1]+1.0)*height/2.0;
             
-            for (int k = 0; k < 3; k++) {
-                float *v0 = v[k];
-                float *v1 = v[(k+1)%3];
-                
-                int x0 = (v0[0]+1.0)*w/2.0;
-                int y0 = (-v0[1]+1.0)*h/2.0;
-                int x1 = (v1[0]+1.0)*w/2.0;
-                int y1 = (-v1[1]+1.0)*h/2.0;
-                
-                buffer.line(x0, y0, x1, y1, blue);
-            }
+            line(x0, y0, x1, y1, color);
         }
     }
 }
-
-void model(tinyobj::attrib_t attrib, std::vector<tinyobj::shape_t> shapes, SoftRenderer &renderer, matrix44 &m) {
-    
-    vector3 light(0, 0, -1);
-    
-    for (size_t s = 0; s < shapes.size(); s++) {
-        for (size_t f = 0; f < shapes[s].mesh.indices.size()/3; f++) {
-            tinyobj::index_t idx0 = shapes[s].mesh.indices[3*f + 0];
-            tinyobj::index_t idx1 = shapes[s].mesh.indices[3*f + 1];
-            tinyobj::index_t idx2 = shapes[s].mesh.indices[3*f + 2];
-            
-            float v[3][3];
-            int f0 = idx0.vertex_index;
-            int f1 = idx1.vertex_index;
-            int f2 = idx2.vertex_index;
-            for (int k = 0; k < 3; k++) {
-                v[0][k] = attrib.vertices[3 * f0 + k];
-                v[1][k] = attrib.vertices[3 * f1 + k];
-                v[2][k] = attrib.vertices[3 * f2 + k];
-            }
-            
-            vector3 pts[3];
-            vector3 worldCoords[3];
-            for (int k = 0; k < 3; k++) {
-                float *v0 = v[k];
-                
-                vector3 vv = vector3(v0[0], v0[1], v0[2]);
-                vector4 vvv = m * vector4(vv, 1.0f);
-                
-                pts[k] = vector3(int(vvv.x/vvv.w), int(vvv.y/vvv.w), int(vvv.z/vvv.w));
-                
-                worldCoords[k] = vv;
-            }
-            
-            vector3 n;
-            vector3Cross(n, worldCoords[2]-worldCoords[0], worldCoords[1] - worldCoords[0]);
-            n.normalize();
-            
-            float intensity = vector3Dot(n, light);
-            
-            if (intensity > 0) {
-                Color c(intensity*255, intensity*255, intensity*255);
-                renderer.triangle(pts, c);
-            }
-        }
-    }
-}
-
- */
 
 #endif /* framebuffer_h */

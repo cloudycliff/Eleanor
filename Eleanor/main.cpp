@@ -22,8 +22,8 @@ const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
 //std::string inputfile = "obj/floor.obj";
-//std::string inputfile = "obj/african_head/african_head.obj";
-std::string inputfile = "obj/brickwall.obj";
+std::string inputfile = "obj/african_head/african_head.obj";
+//std::string inputfile = "obj/brickwall.obj";
 
 
 int main(int argc, const char * argv[]) {
@@ -43,7 +43,7 @@ int main(int argc, const char * argv[]) {
     
     scene.modelNode = &modelNode;
     
-    vector3 light = vector3(1,1,1);
+    vector3 light = vector3(1,1,-10);
     light.normalize();
     scene.light = &light;
     
@@ -52,6 +52,9 @@ int main(int argc, const char * argv[]) {
     SoftRenderer renderer(SCREEN_WIDTH, SCREEN_HEIGHT);
     
     viewer.setRenderer(&renderer);
+    
+    TestShader shader;
+    viewer.setShader(&shader);
     
     viewer.start();
     

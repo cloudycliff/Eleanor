@@ -54,7 +54,9 @@ struct TGAColor {
         TGAColor res = *this;
         if (intensity > 1.0f) intensity = 1.0f;
         if (intensity < 0.0f) intensity = 0.0f;
-        for (int i=0; i<4; i++) res.bgra[i] = bgra[i]*intensity;
+        for (int i=0; i<4; i++)
+            res.bgra[i] = intensity * (float)bgra[i];
+            
         return res;
     }
     

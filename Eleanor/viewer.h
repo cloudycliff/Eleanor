@@ -26,7 +26,7 @@ public:
     
     void setRenderer(SoftRenderer *r);
     void setScene(Scene *s);
-    void setShader(IShader *s);
+    void setShader(IShader *s, int sid);
     
 private:
     int width, height;
@@ -40,10 +40,11 @@ private:
     Scene *scene;
     Transforms transforms;
     
-    IShader *shader;
+    IShader *shader[2];
+    int shaderId = 0;
     
     
-    float rotateAngle = 10.0f;
+    float rotateAngle = 0.0f;
     
     
     bool initSDL(const char *title);
@@ -72,10 +73,6 @@ void Viewer::init() {
 }
 
 void Viewer::start() {
-    shader->modelObj = scene->modelNode->model;
-    shader->transforms = &transforms;
-    shader->light = scene->light;
-    shader->camera = scene->camera;
     
     while (!shouldQuit)
         update();
@@ -85,6 +82,7 @@ void Viewer::start() {
 }
 
 void Viewer::update() {
+    
     handleEvent();
     
     renderer->enableZTest(enableZ);
@@ -105,6 +103,11 @@ void Viewer::update() {
     
     transforms.update();
     
+    shader[shaderId]->modelObj = scene->modelNode->model;
+    shader[shaderId]->transforms = &transforms;
+    shader[shaderId]->light = scene->light;
+    shader[shaderId]->camera = scene->camera;
+    
     //renderer->line(100, 100, 500, 600, TGAColor(255,0,0));
     
     //vector3 pts[3] = {vector3(10,10,0), vector3(100,320,0), vector3(490,460,0)};
@@ -112,7 +115,7 @@ void Viewer::update() {
     
     //renderer->wireframe(*scene->modelNode->model, TGAColor(0,0,255));
     
-    renderer->model(*scene->modelNode->model, *shader);
+    renderer->model(*scene->modelNode->model, *shader[shaderId]);
     
     renderer->draw(sdlRenderer);
     
@@ -136,6 +139,8 @@ void Viewer::handleEvent() {
             else if (k == SDL_SCANCODE_Q) rotateAngle += 0.1;
             else if (k == SDL_SCANCODE_E) rotateAngle -= 0.1;
             else if (k == SDL_SCANCODE_Z) enableZ = !enableZ;
+            else if (k == SDL_SCANCODE_1) shaderId = 0;
+            else if (k == SDL_SCANCODE_2) shaderId = 1;
         } else if (e.type == SDL_MOUSEMOTION) {
             scene->camera->ProcessMouseMovement(e.motion.xrel, e.motion.yrel);
         } else if (e.type == SDL_MOUSEWHEEL) {
@@ -152,8 +157,8 @@ void Viewer::setScene(Scene *s) {
     this->scene = s;
 }
 
-void Viewer::setShader(IShader *s) {
-    this->shader = s;
+void Viewer::setShader(IShader *s, int sid) {
+    this->shader[sid] = s;
 }
 
 bool Viewer::initSDL(const char *title) {

@@ -31,7 +31,7 @@ int main(int argc, const char * argv[]) {
     Viewer viewer(SCREEN_WIDTH, SCREEN_HEIGHT);
     viewer.init();
     
-    Camera camera(vector3(0,0,3));
+    Camera camera(vector3(0,0,10));
     
     Scene scene;
     scene.camera = &camera;
@@ -43,7 +43,7 @@ int main(int argc, const char * argv[]) {
     
     scene.modelNode = &modelNode;
     
-    vector3 light = vector3(1,1,-10);
+    vector3 light = vector3(0,0,3);
     light.normalize();
     scene.light = &light;
     
@@ -54,7 +54,10 @@ int main(int argc, const char * argv[]) {
     viewer.setRenderer(&renderer);
     
     TestShader shader;
-    viewer.setShader(&shader);
+    viewer.setShader(&shader, 0);
+    
+    TangentShader shader1;
+    viewer.setShader(&shader1, 1);
     
     viewer.start();
     

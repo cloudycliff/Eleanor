@@ -63,7 +63,7 @@ matrix44 projectionFOV(float fovy, float aspect, float near, float far) {
     m.m[2][2] = (near+far)/nmf;
     m.m[2][3] = -1.0f;
     m.m[3][2] = 2*far*near/nmf;
-    m.m[3][3] = 1.0f; //should this be 1 or 0 ?
+    m.m[3][3] = 0.0f;
 
     return m;
 }

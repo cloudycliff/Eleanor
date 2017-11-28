@@ -68,6 +68,10 @@ struct TGAColor {
         cc.bgra[3] += c.bgra[3];
         return cc;
     }
+    
+    void dump() {
+        printf("%d %d %d\n", bgra[2], bgra[1], bgra[0]);
+    }
 };
 
 struct TGAImage {

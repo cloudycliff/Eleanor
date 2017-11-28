@@ -22,7 +22,7 @@ struct IShader {
     Camera *camera;
     
     virtual vector4 vertex(int nface, int nthvert) = 0;
-    virtual void fragment(vector3 bc, TGAColor &c) = 0;
+    virtual bool fragment(vector3 bc, TGAColor &c) = 0;
 };
 
 
@@ -48,7 +48,7 @@ struct TestShader : public IShader {
         return gl_Position;
     }
     
-    virtual void fragment(vector3 bc, TGAColor &c) {
+    virtual bool fragment(vector3 bc, TGAColor &c) {
         vector3 n;
         n.x = normals[0].x*bc.x + normals[1].x*bc.y + normals[2].x*bc.z;
         n.y = normals[0].y*bc.x + normals[1].y*bc.y + normals[2].y*bc.z;
@@ -58,15 +58,18 @@ struct TestShader : public IShader {
         uv.x = uvs[0].x*bc.x + uvs[1].x*bc.y + uvs[2].x*bc.z;
         uv.y = uvs[0].y*bc.x + uvs[1].y*bc.y + uvs[2].y*bc.z;
         
-        float diff = std::max(0.0f, n * (*light));
+        float diff = n * (*light);
+        if (diff <= 0) return false;
+        
         c = modelObj->getDiffuse(uv.x, uv.y)*diff;
+        
+        return true;
     }
 };
 
 struct TangentShader : public IShader {
     
     vector2 uvs[3];
-    vector3 normals[3];
     
     vector3 tangentLightPoss[3];
     vector3 tangentViewPoss[3];
@@ -109,11 +112,7 @@ struct TangentShader : public IShader {
         return gl_Position;
     }
     
-    virtual void fragment(vector3 bc, TGAColor &c) {
-        vector3 n;
-        n.x = normals[0].x*bc.x + normals[1].x*bc.y + normals[2].x*bc.z;
-        n.y = normals[0].y*bc.x + normals[1].y*bc.y + normals[2].y*bc.z;
-        n.z = normals[0].z*bc.x + normals[1].z*bc.y + normals[2].z*bc.z;
+    virtual bool fragment(vector3 bc, TGAColor &c) {
         
         vector2 uv;
         uv.x = uvs[0].x*bc.x + uvs[1].x*bc.y + uvs[2].x*bc.z;
@@ -123,7 +122,7 @@ struct TangentShader : public IShader {
         normal.normalize();
         
         TGAColor color = modelObj->getDiffuse(uv.x, uv.y);
-        TGAColor ambient = color * 0.2;
+        TGAColor ambient = color * 0.1;
         
         vector3 tangentLightPos;
         tangentLightPos.x = tangentLightPoss[0].x*bc.x + tangentLightPoss[1].x*bc.y + tangentLightPoss[2].x*bc.z;
@@ -138,14 +137,17 @@ struct TangentShader : public IShader {
         tangentFragPos.y = tangentFragPoss[0].y*bc.x + tangentFragPoss[1].y*bc.y + tangentFragPoss[2].y*bc.z;
         tangentFragPos.z = tangentFragPoss[0].z*bc.x + tangentFragPoss[1].z*bc.y + tangentFragPoss[2].z*bc.z;
         
-        vector3 lightDir = tangentLightPos - tangentFragPos;
+        vector3 lightDir = tangentLightPos-tangentFragPos;
         lightDir.normalize();
         
-        float diff = std::max(lightDir*normal, 0.0f);
+        float diff = std::max(0.0f, lightDir*normal);
         
         TGAColor diffuse = color * diff;
         
-        vector3 viewDir = tangentViewPos - tangentFragPos;
+        vector3 viewDir = tangentViewPos-tangentFragPos;
+
+        if (viewDir * normal <= 0) return false;
+        
         //vector3 reflectDir = reflect(-lightDir, normal);
         vector3 halfwayDir = lightDir + viewDir;
         halfwayDir.normalize();
@@ -154,6 +156,8 @@ struct TangentShader : public IShader {
         TGAColor specular = TGAColor(32,32,32) * spec;
         
         c = ambient + diffuse + specular;
+        
+        return true;
     }
 };
 

@@ -24,7 +24,7 @@ private:
     int width;
     int height;
     bool _enableZTest = true;
-    float zDefault = 255.0f;
+    float zDefault = -5000.0f;
     
     vector3 barycentric(vector3 *pts, vector2 p);
     vector3 barycentric(vector4 *pts, vector2 p);
@@ -191,13 +191,13 @@ void SoftRenderer::triangle(vector4 *pts, IShader &shader) {
             z = z/w;
             
             bool retain = false;
-            if (!_enableZTest || (_enableZTest && zbuffer[int(p.x+p.y*width)] >= z)) retain = true;
+            if (!_enableZTest || (_enableZTest && zbuffer[int(p.x+p.y*width)] <= z)) retain = true;
 
             if (retain) {
                 zbuffer[int(p.x+p.y*width)] = z;
                 TGAColor color;
-                shader.fragment(bc_clip, color);
-                set(p.x, p.y, color);
+                bool keep = shader.fragment(bc_clip, color);
+                if (keep) set(p.x, p.y, color);
             }
         }
     }
@@ -230,9 +230,9 @@ void SoftRenderer::wireframe(Model &modelObj, const TGAColor &color) {
             vector3 v1 = v[(k+1)%3];
             
             int x0 = (v0[0]+1.0)*width/2.0;
-            int y0 = (-v0[1]+1.0)*height/2.0;
+            int y0 = (v0[1]+1.0)*height/2.0;
             int x1 = (v1[0]+1.0)*width/2.0;
-            int y1 = (-v1[1]+1.0)*height/2.0;
+            int y1 = (v1[1]+1.0)*height/2.0;
             
             line(x0, y0, x1, y1, color);
         }

@@ -17,8 +17,6 @@
 
 #include "TGAImage.h"
 
-struct IShader;
-
 class Model {
 private:
     tinyobj::attrib_t attrib;
@@ -84,9 +82,9 @@ public:
     vector3 getNormal(float u, float v) {
         TGAColor c = normalMap.get(u * normalMap.width, v * normalMap.height);
         vector3 res;
-        res.x = c.bgra[2]/255.0f*2.0f-1.0f;
-        res.y = c.bgra[1]/255.0f*2.0f-1.0f;
-        res.z = c.bgra[0]/255.0f*2.0f-1.0f;
+        res.x = (float)c.bgra[2]/255.0f*2.0f-1.0f;
+        res.y = (float)c.bgra[1]/255.0f*2.0f-1.0f;
+        res.z = (float)c.bgra[0]/255.0f*2.0f-1.0f;
         return res;
     }
     

@@ -15,7 +15,6 @@ struct Transforms {
     matrix44 MVP;
     matrix44 MVP_IT;
     
-    matrix44 viewport;
     matrix44 view;
     matrix44 projection;
     matrix44 model;

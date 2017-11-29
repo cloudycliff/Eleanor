@@ -43,21 +43,21 @@ int main(int argc, const char * argv[]) {
     
     scene.modelNode = &modelNode;
     
-    vector3 light = vector3(0,0,3);
+    vector3 light = vector3(1,1,1);
     light.normalize();
     scene.light = &light;
     
     viewer.setScene(&scene);
     
-    SoftRenderer renderer(SCREEN_WIDTH, SCREEN_HEIGHT);
-    
-    viewer.setRenderer(&renderer);
     
     TestShader shader;
     viewer.setShader(&shader, 0);
     
-    TangentShader shader1;
+    TangentNormalShader shader1;
     viewer.setShader(&shader1, 1);
+    
+    TangentAShader shader2;
+    viewer.setShader(&shader2, 2);
     
     viewer.start();
     

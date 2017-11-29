@@ -14,7 +14,7 @@
 #include "ModelLoader.h"
 #include "TGAImage.h"
 #include "shaders.h"
-
+#include "TransformUtils.h"
 
 class SoftRenderer {
 private:
@@ -25,6 +25,7 @@ private:
     int height;
     bool _enableZTest = true;
     float zDefault = -5000.0f;
+    matrix44 mViewport;
     
     vector3 barycentric(vector3 *pts, vector2 p);
     vector3 barycentric(vector4 *pts, vector2 p);
@@ -33,6 +34,9 @@ public:
     SoftRenderer(int w, int h) {
         width = w;
         height = h;
+        
+        mViewport = viewport(0, 0, width, height);
+        
         int nbytes = width*height*bytespp*sizeof(unsigned char);
         buffer = new unsigned char[nbytes];
         memset(buffer, 0, nbytes);
@@ -159,7 +163,12 @@ vector3 SoftRenderer::barycentric(vector4 *pts, vector2 p) {
     return vector3(-1, 1, 1);
 }
 
-void SoftRenderer::triangle(vector4 *pts, IShader &shader) {
+void SoftRenderer::triangle(vector4 *in_pts, IShader &shader) {
+    vector4 pts[3];
+    for (int i = 0; i < 3; i++) {
+        pts[i] = mViewport * in_pts[i];
+    }
+    
     vector2 bboxmin(width-1, height-1);
     vector2 bboxmax(0, 0);
     vector2 clamp(width-1, height-1);
@@ -204,6 +213,8 @@ void SoftRenderer::triangle(vector4 *pts, IShader &shader) {
 }
 
 void SoftRenderer::model(Model &modelObj, IShader &shader) {
+    
+    shader.init();
     
     for (int f = 0; f < modelObj.getIndexSize()/3; f++) {
         

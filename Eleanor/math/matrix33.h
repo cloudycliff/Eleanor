@@ -113,9 +113,9 @@ inline void matrix33::inverse() {
 }
 
 void matrix33::dump() {
-    printf("%.2f  %.2f  %.2f\n", m[0][0], m[0][1], m[0][2]);
-    printf("%.2f  %.2f  %.2f\n", m[1][0], m[1][1], m[1][2]);
-    printf("%.2f  %.2f  %.2f\n\n", m[2][0], m[2][1], m[2][2]);
+    printf("%f  %f  %f\n", m[0][0], m[0][1], m[0][2]);
+    printf("%f  %f  %f\n", m[1][0], m[1][1], m[1][2]);
+    printf("%f  %f  %f\n\n", m[2][0], m[2][1], m[2][2]);
 }
 
 #endif /* matrix33_h */

@@ -24,7 +24,6 @@ public:
     void init();
     void start();
     
-    void setRenderer(SoftRenderer *r);
     void setScene(Scene *s);
     void setShader(IShader *s, int sid);
     
@@ -40,8 +39,8 @@ private:
     Scene *scene;
     Transforms transforms;
     
-    IShader *shader[2];
-    int shaderId = 0;
+    IShader *shader[3];
+    int shaderId = 1;
     
     
     float rotateAngle = 0.0f;
@@ -69,7 +68,7 @@ void Viewer::init() {
     
     fpsDisplay.init(sdlRenderer);
     
-    transforms.viewport = viewport(0, 0, width, height);
+    renderer = new SoftRenderer(width, height);
 }
 
 void Viewer::start() {
@@ -132,25 +131,27 @@ void Viewer::handleEvent() {
             int k = e.key.keysym.scancode;
             
             if (k == SDL_SCANCODE_ESCAPE) shouldQuit = true;
+            
             else if (k == SDL_SCANCODE_W) scene->camera->ProcessKeyboard(FORWARD, fpsDisplay.getDeltaTime()/10000.0);
             else if (k == SDL_SCANCODE_S) scene->camera->ProcessKeyboard(BACKWARD, fpsDisplay.getDeltaTime()/10000.0);
             else if (k == SDL_SCANCODE_A) scene->camera->ProcessKeyboard(LEFT, fpsDisplay.getDeltaTime()/10000.0);
             else if (k == SDL_SCANCODE_D) scene->camera->ProcessKeyboard(RIGHT, fpsDisplay.getDeltaTime()/10000.0);
+            
             else if (k == SDL_SCANCODE_Q) rotateAngle += 0.1;
             else if (k == SDL_SCANCODE_E) rotateAngle -= 0.1;
+            
             else if (k == SDL_SCANCODE_Z) enableZ = !enableZ;
+            
             else if (k == SDL_SCANCODE_1) shaderId = 0;
             else if (k == SDL_SCANCODE_2) shaderId = 1;
+            else if (k == SDL_SCANCODE_3) shaderId = 2;
+            
         } else if (e.type == SDL_MOUSEMOTION) {
             scene->camera->ProcessMouseMovement(e.motion.xrel, e.motion.yrel);
         } else if (e.type == SDL_MOUSEWHEEL) {
             scene->camera->ProcessMouseScroll(e.wheel.y);
         }
     }
-}
-
-void Viewer::setRenderer(SoftRenderer *r) {
-    this->renderer = r;
 }
 
 void Viewer::setScene(Scene *s) {

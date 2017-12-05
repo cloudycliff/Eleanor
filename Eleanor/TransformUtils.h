@@ -55,11 +55,10 @@ matrix44 projection(float coeff) {
 matrix44 projectionFOV(float fovy, float aspect, float near, float far) {
     matrix44 m;
     float d2r = PI/180.0f;
-    float zoomy = 1.0f / (float)tan(d2r * fovy);
-    float zoomx = zoomy * aspect;
     float nmf = near - far;
-    m.m[0][0] = zoomx;
-    m.m[1][1] = zoomy;
+    float tanHalfFovy = (float)tan(d2r * fovy);
+    m.m[0][0] = 1.0f / (aspect * tanHalfFovy);
+    m.m[1][1] = 1.0f / tanHalfFovy;
     m.m[2][2] = (near+far)/nmf;
     m.m[2][3] = -1.0f;
     m.m[3][2] = 2*far*near/nmf;

@@ -28,7 +28,6 @@ private:
     matrix44 mViewport;
     
     vector3 barycentric(vector3 *pts, vector2 p);
-    vector3 barycentric(vector4 *pts, vector2 p);
     
 public:
     SoftRenderer(int w, int h) {
@@ -152,21 +151,11 @@ void SoftRenderer::triangle(vector3 *pts, const TGAColor &color) {
     }
 }
 
-vector3 SoftRenderer::barycentric(vector4 *pts, vector2 p) {
-
-    vector3 u;
-    vector3 s1 = vector3(pts[2].x/pts[2].w-pts[0].x/pts[0].w, pts[1].x/pts[1].w-pts[0].x/pts[0].w, pts[0].x/pts[0].w-p.x);
-    vector3 s2 = vector3(pts[2].y/pts[2].w-pts[0].y/pts[0].w, pts[1].y/pts[1].w-pts[0].y/pts[0].w, pts[0].y/pts[0].w-p.y);
-    
-    vector3Cross(u, s1, s2);
-    if (std::abs(u.z) > 1e-2) return vector3(1.0f-(u.x+u.y)/u.z, u.y/u.z, u.x/u.z);
-    return vector3(-1, 1, 1);
-}
-
 void SoftRenderer::triangle(vector4 *in_pts, IShader &shader) {
-    vector4 pts[3];
+    vector3 pts[3];
     for (int i = 0; i < 3; i++) {
-        pts[i] = mViewport * in_pts[i];
+        vector4 v = mViewport * in_pts[i];
+        pts[i] = vector3(v.x, v.y, v.z);
     }
     
     vector2 bboxmin(width-1, height-1);
@@ -174,8 +163,8 @@ void SoftRenderer::triangle(vector4 *in_pts, IShader &shader) {
     vector2 clamp(width-1, height-1);
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 2; j++) {
-            bboxmin[j] = std::max(0.0f, std::min(bboxmin[j], pts[i][j]/pts[i].w));
-            bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]/pts[i].w));
+            bboxmin[j] = std::max(0.0f, std::min(bboxmin[j], pts[i][j]));
+            bboxmax[j] = std::min(clamp[j], std::max(bboxmax[j], pts[i][j]));
         }
     }
 
@@ -189,15 +178,10 @@ void SoftRenderer::triangle(vector4 *in_pts, IShader &shader) {
 
             if (bc.x<0 || bc.y<0 || bc.z<0) continue;
             
-            vector3 bc_clip = vector3(bc.x/pts[0].w, bc.y/pts[1].w, bc.z/pts[2].w);
-            bc_clip = bc_clip / (bc_clip.x + bc_clip.y + bc_clip.z);
-            
-            float z = 0, w = 0;
+            float z = 0;
             for (int i=0; i<3; i++) {
-                z += pts[i].z*bc_clip[i];
-                w += pts[i].w*bc_clip[i];
+                z += pts[i].z*bc[i];
             }
-            z = z/w;
             
             bool retain = false;
             if (!_enableZTest || (_enableZTest && zbuffer[int(p.x+p.y*width)] <= z)) retain = true;
@@ -205,7 +189,7 @@ void SoftRenderer::triangle(vector4 *in_pts, IShader &shader) {
             if (retain) {
                 zbuffer[int(p.x+p.y*width)] = z;
                 TGAColor color;
-                bool keep = shader.fragment(bc_clip, color);
+                bool keep = shader.fragment(bc, color);
                 if (keep) set(p.x, p.y, color);
             }
         }
@@ -220,7 +204,8 @@ void SoftRenderer::model(Model &modelObj, IShader &shader) {
         
         vector4 pts[3];
         for (int k = 0; k < 3; k++) {
-            pts[k] = shader.vertex(f, k);
+            vector4 v = shader.vertex(f, k);
+            pts[k] = vector4(v.x/v.w, v.y/v.w, v.z/v.w, 1.0f);
         }
         
         triangle(pts, shader);

@@ -11,17 +11,16 @@
 
 #include "math/math.h"
 
-int depth = 255;
 matrix44 viewport(int x, int y, int w, int h) {
     matrix44 m = matrix44::identity();
     
     m(0, 3) = x + w/2.0f;
     m(1, 3) = y + h/2.0f;
-    m(2, 3) = depth/2.0f;
+    m(2, 3) = 0.5f;
     
     m(0, 0) = w/2.0f;
     m(1, 1) = h/2.0f;
-    m(2, 2) = depth/2.0f;
+    m(2, 2) = 0.5f;
     
     return m;
 }

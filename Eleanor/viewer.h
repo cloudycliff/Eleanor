@@ -40,7 +40,7 @@ private:
     Transforms transforms;
     
     IShader *shader[3];
-    int shaderId = 1;
+    int shaderId = 0;
     
     
     float rotateAngle = 0.0f;

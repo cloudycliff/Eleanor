@@ -98,7 +98,7 @@ void Viewer::update() {
     transforms.model = translate * rotate;
     
     transforms.view = scene->camera->GetViewMatrix();
-    transforms.projection = projectionFOV(scene->camera->Zoom, (float)width/(float)height, 0.1f, 1000.f);
+    transforms.projection = projectionFOV(scene->camera->Zoom, (float)width/(float)height, 0.1f, 100.f);
     
     transforms.update();
     

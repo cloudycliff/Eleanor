@@ -34,15 +34,16 @@ matrix44 lookat(vector3 eye, vector3 center, vector3 up) {
     vector3Cross(y, z, x);
     y.normalize();
     
-    matrix44 res = matrix44::identity();
+    matrix44 rotate = matrix44::identity();
+    matrix44 translate = matrix44::identity();
     for (int i = 0; i < 3; i++) {
-        res(0, i) = x[i];
-        res(1, i) = y[i];
-        res(2, i) = z[i];
-        res(i, 3) = -center[i];
+        rotate(0, i) = x[i];
+        rotate(1, i) = y[i];
+        rotate(2, i) = z[i];
+        translate(i, 3) = -center[i];
     }
     
-    return res;
+    return rotate*translate;
 }
 
 matrix44 projection(float coeff) {

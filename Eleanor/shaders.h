@@ -26,7 +26,6 @@ struct IShader {
     virtual bool fragment(vector3 bc, TGAColor &c) = 0;
 };
 
-
 struct TestShader : public IShader {
     
     vector2 uvs[3];

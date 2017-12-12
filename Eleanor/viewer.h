@@ -102,6 +102,8 @@ void Viewer::update() {
     
     transforms.update();
     
+    renderer->setTransforms(&transforms);
+    
     shader[shaderId]->modelObj = scene->modelNode->model;
     shader[shaderId]->transforms = &transforms;
     shader[shaderId]->light = scene->light;
@@ -113,6 +115,8 @@ void Viewer::update() {
     //renderer->triangle(pts, TGAColor(0,255,0));
     
     //renderer->wireframe(*scene->modelNode->model, TGAColor(0,0,255));
+    
+    renderer->drawAxes();
     
     renderer->model(*scene->modelNode->model, *shader[shaderId]);
     

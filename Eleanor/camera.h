@@ -12,16 +12,14 @@
 #include "math/math.h"
 #include "TransformUtils.h"
 
-float radians(float degrees) {
-    return degrees * 0.01745329251994329576923690768489;
-}
-
 enum Camera_Movement {
     FORWARD,
     BACKWARD,
     LEFT,
     RIGHT
 };
+
+const float DEG2RAD = 3.14159265358979f / 180.0f;
 
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
@@ -83,7 +81,7 @@ public:
         xoffset *= MouseSensitivity;
         yoffset *= MouseSensitivity;
         
-        Yaw += xoffset;
+        Yaw -= xoffset;
         Pitch += yoffset;
         
         if (constrainPitch) {
@@ -103,9 +101,9 @@ public:
 private:
     void updateCameraVectors() {
         vector3 front;
-        front.x = cos(radians(Yaw)) * cos(radians(Pitch));
-        front.y = sin(radians(Pitch));
-        front.z = sin(radians(Yaw)) * cos(radians(Pitch));
+        front.x = cos(Yaw*DEG2RAD) * cos(Pitch*DEG2RAD);
+        front.y = sin(Pitch*DEG2RAD);
+        front.z = sin(Yaw*DEG2RAD) * cos(Pitch*DEG2RAD);
         
         Front = normalize(front);
         vector3Cross(Right, Front, WorldUp);
@@ -115,7 +113,5 @@ private:
         Up.normalize();
     }
 };
-
-
 
 #endif /* camera_h */

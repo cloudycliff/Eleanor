@@ -27,7 +27,10 @@ private:
     float zDefault = -5000.0f;
     matrix44 mViewport;
     
+    Transforms *transforms;
+    
     vector3 barycentric(vector3 *pts, vector2 p);
+    void drawLine(vector4 start, vector4 end, TGAColor &color);
     
 public:
     SoftRenderer(int w, int h) {
@@ -44,6 +47,10 @@ public:
         for (int i = 0; i < width*height; i++) {
             zbuffer[i] = zDefault;
         }
+    }
+    
+    void setTransforms(Transforms *t) {
+        transforms = t;
     }
     
     void enableZTest(bool z) {
@@ -85,6 +92,8 @@ public:
     void model(Model &modelObj, IShader &shader);
     
     void wireframe(Model &modelObj, const TGAColor &color);
+    
+    void drawAxes();
 };
 
 void SoftRenderer::line(int x0, int y0, int x1, int y1, const TGAColor &color) {
@@ -116,6 +125,45 @@ void SoftRenderer::line(int x0, int y0, int x1, int y1, const TGAColor &color) {
             error2 -= dx*2;
         }
     }
+}
+
+void SoftRenderer::drawLine(vector4 start, vector4 end, TGAColor &color) {
+    vector4 s = transforms->projection * transforms->view * start;
+    vector4 e = transforms->projection * transforms->view * end;
+    
+    vector4 ss = mViewport * vector4(s.x/s.w, s.y/s.w, s.z/s.w, 1.0f);
+    vector4 ee = mViewport * vector4(e.x/e.w, e.y/e.w, e.z/e.w, 1.0f);
+    
+    line(ss.x, ss.y, ee.x, ee.y, color);
+}
+
+void SoftRenderer::drawAxes() {
+    
+    TGAColor color = TGAColor(128,128,128,128);
+    vector4 start, end;
+    for (int i = -5; i < 6; i++) {
+        start = vector4(-5,0,i,1);
+        end = vector4(5,0,i,1);
+        drawLine(start, end, color);
+        
+        start = vector4(i,0,-5,1);
+        end = vector4(i,0,5,1);
+        drawLine(start, end, color);
+    }
+    
+    start = vector4(0,0,0,1);
+    
+    end = vector4(3,0,0,1);
+    color = TGAColor(255,0,0);
+    drawLine(start, end, color);
+    
+    end = vector4(0,3,0,1);
+    color = TGAColor(0,255,0);
+    drawLine(start, end, color);
+    
+    end = vector4(0,0,3,1);
+    color = TGAColor(0,0,255);
+    drawLine(start, end, color);
 }
 
 vector3 SoftRenderer::barycentric(vector3 *pts, vector2 p) {

@@ -31,7 +31,7 @@ int main(int argc, const char * argv[]) {
     Viewer viewer(SCREEN_WIDTH, SCREEN_HEIGHT);
     viewer.init();
     
-    Camera camera(vector3(0,0,10));
+    Camera camera(vector3(0,2,10));
     
     Scene scene;
     scene.camera = &camera;

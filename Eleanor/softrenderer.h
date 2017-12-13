@@ -26,7 +26,7 @@ private:
     int width;
     int height;
     bool _enableZTest = true;
-    float zDefault = -5000.0f;
+    float zDefault = 5000.0f;
     matrix44 mViewport;
     
     Transforms *transforms;
@@ -139,7 +139,6 @@ void SoftRenderer::drawLine(vector4 start, vector4 end, TGAColor &color) {
     vector4 ee = mViewport * vector4(e.x/e.w, e.y/e.w, e.z/e.w, 1.0f);
 
     line(ss.x, ss.y, ee.x, ee.y, color);
-    
 }
 
 void SoftRenderer::drawAxes() {
@@ -168,16 +167,6 @@ void SoftRenderer::drawAxes() {
     
     end = vector4(0,0,3,1);
     color = TGAColor(0,0,255);
-    drawLine(start, end, color);
-    
-//    vector4 p = vector4(1,0,1,1);
-//    vector4 pp = transforms->MVP * p;
-//    vector4 ppp = mViewport * vector4(pp.x/pp.w, pp.y/pp.w, pp.z/pp.w, 1.0f);
-    color = TGAColor(255,0,0);
-//    set(ppp.x, ppp.y, color);
-    
-    start = vector4(0,-1,1,1);
-    end = vector4(0,1,1,1);
     drawLine(start, end, color);
 }
 
@@ -251,7 +240,7 @@ void SoftRenderer::triangle(vector4 *in_pts, IShader &shader) {
             }
             
             bool retain = false;
-            if (!_enableZTest || (_enableZTest && zbuffer[int(p.x+p.y*width)] <= z)) retain = true;
+            if (!_enableZTest || (_enableZTest && zbuffer[int(p.x+p.y*width)] >= z)) retain = true;
 
             if (retain) {
                 zbuffer[int(p.x+p.y*width)] = z;

@@ -143,6 +143,11 @@ void Viewer::handleEvent() {
             else if (k == SDL_SCANCODE_A) scene->camera->ProcessKeyboard(LEFT, fpsDisplay.getDeltaTime()/10000.0);
             else if (k == SDL_SCANCODE_D) scene->camera->ProcessKeyboard(RIGHT, fpsDisplay.getDeltaTime()/10000.0);
             
+            else if (k == SDL_SCANCODE_UP) scene->modelNode->position.y += 1;
+            else if (k == SDL_SCANCODE_DOWN) scene->modelNode->position.y -= 1;
+            else if (k == SDL_SCANCODE_LEFT) scene->modelNode->position.x += 1;
+            else if (k == SDL_SCANCODE_RIGHT) scene->modelNode->position.x -= 1;
+            
             else if (k == SDL_SCANCODE_Q) rotateAngle += 0.1;
             else if (k == SDL_SCANCODE_E) rotateAngle -= 0.1;
             

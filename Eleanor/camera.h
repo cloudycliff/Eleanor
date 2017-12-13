@@ -75,6 +75,8 @@ public:
             Position = Position - Right * velocity;
         if (direction == RIGHT)
             Position = Position + Right * velocity;
+        
+        updateCameraVectors();
     }
     
     void ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true) {

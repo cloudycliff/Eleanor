@@ -16,6 +16,8 @@
 #include "shaders.h"
 #include "TransformUtils.h"
 
+const float EPSILON = 0.00001f;
+
 class SoftRenderer {
 private:
     unsigned char *buffer = NULL;
@@ -131,10 +133,13 @@ void SoftRenderer::drawLine(vector4 start, vector4 end, TGAColor &color) {
     vector4 s = transforms->projection * transforms->view * start;
     vector4 e = transforms->projection * transforms->view * end;
     
+    if (s.w < EPSILON || e.w < EPSILON) return;
+    
     vector4 ss = mViewport * vector4(s.x/s.w, s.y/s.w, s.z/s.w, 1.0f);
     vector4 ee = mViewport * vector4(e.x/e.w, e.y/e.w, e.z/e.w, 1.0f);
-    
+
     line(ss.x, ss.y, ee.x, ee.y, color);
+    
 }
 
 void SoftRenderer::drawAxes() {
@@ -163,6 +168,16 @@ void SoftRenderer::drawAxes() {
     
     end = vector4(0,0,3,1);
     color = TGAColor(0,0,255);
+    drawLine(start, end, color);
+    
+//    vector4 p = vector4(1,0,1,1);
+//    vector4 pp = transforms->MVP * p;
+//    vector4 ppp = mViewport * vector4(pp.x/pp.w, pp.y/pp.w, pp.z/pp.w, 1.0f);
+    color = TGAColor(255,0,0);
+//    set(ppp.x, ppp.y, color);
+    
+    start = vector4(0,-1,1,1);
+    end = vector4(0,1,1,1);
     drawLine(start, end, color);
 }
 
@@ -202,7 +217,8 @@ void SoftRenderer::triangle(vector3 *pts, const TGAColor &color) {
 void SoftRenderer::triangle(vector4 *in_pts, IShader &shader) {
     vector3 pts[3];
     for (int i = 0; i < 3; i++) {
-        vector4 v = mViewport * in_pts[i];
+        vector4 v = in_pts[i];
+        v = mViewport * vector4(v.x/v.w, v.y/v.w, v.z/v.w, 1.0f);
         pts[i] = vector3(v.x, v.y, v.z);
     }
     
@@ -226,6 +242,9 @@ void SoftRenderer::triangle(vector4 *in_pts, IShader &shader) {
 
             if (bc.x<0 || bc.y<0 || bc.z<0) continue;
             
+            vector3 bc_clip = vector3(bc.x/in_pts[0].w, bc.y/in_pts[1].w, bc.z/in_pts[2].w);
+            bc = bc_clip / (bc_clip.x + bc_clip.y + bc_clip.z);
+
             float z = 0;
             for (int i=0; i<3; i++) {
                 z += pts[i].z*bc[i];
@@ -252,8 +271,7 @@ void SoftRenderer::model(Model &modelObj, IShader &shader) {
         
         vector4 pts[3];
         for (int k = 0; k < 3; k++) {
-            vector4 v = shader.vertex(f, k);
-            pts[k] = vector4(v.x/v.w, v.y/v.w, v.z/v.w, 1.0f);
+            pts[k] = shader.vertex(f, k);
         }
         
         triangle(pts, shader);

@@ -9,6 +9,8 @@
 #ifndef viewer_h
 #define viewer_h
 
+#include <unistd.h>
+
 #include <SDL2/SDL.h>
 #include <SDL2_ttf/SDL_ttf.h>
 

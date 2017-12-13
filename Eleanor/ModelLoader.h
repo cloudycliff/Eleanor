@@ -26,6 +26,7 @@ private:
     
     TGAImage diffuseMap;
     TGAImage normalMap;
+    TGAImage specularMap;
     
     void loadTexture(std::string filename, const char *suffix, TGAImage &img);
     void calcTangents();
@@ -39,6 +40,7 @@ public:
         
         loadTexture(inputfile, "_diffuse.tga", diffuseMap);
         loadTexture(inputfile, "_nm_tangent.tga", normalMap);
+        loadTexture(inputfile, "_spec.tga", specularMap);
         
         tangents = new vector3[getIndexSize()/3];
         calcTangents();
@@ -77,6 +79,10 @@ public:
     
     TGAColor getDiffuse(float u, float v) {
         return diffuseMap.get(u * diffuseMap.width, v * diffuseMap.height);
+    }
+    
+    float getSpecular(float u, float v) {
+        return specularMap.get(u * specularMap.width, v * specularMap.height).bgra[0]/1.0f;
     }
     
     vector3 getNormal(float u, float v) {

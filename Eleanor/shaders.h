@@ -9,6 +9,8 @@
 #ifndef shaders_h
 #define shaders_h
 
+#include <cmath>
+
 #include "math/math.h"
 #include "ModelLoader.h"
 #include "transform.h"
@@ -67,6 +69,59 @@ struct TestShader : public IShader {
         float diff = std::max(0.0f, n * l);
         
         c = modelObj->getDiffuse(uv.x, uv.y)*diff;
+        
+        return true;
+    }
+};
+
+struct PhongShader : public IShader {
+    
+    vector2 uvs[3];
+    vector3 normals[3];
+    
+    vector3 l;
+    
+    virtual void init() {
+        l = matrix33(transforms->MVP) * (*light);
+        l.normalize();
+    }
+    
+    virtual vector4 vertex(int nface, int nthvert) {
+        tinyobj::index_t idx = modelObj->getIndex(nface, nthvert);
+        
+        vector4 pos = vector4(modelObj->getVertex(idx.vertex_index), 1.0f);
+        vector4 gl_Position = transforms->MVP * pos;
+        
+        vector3 normal = modelObj->getNormal(idx.normal_index);
+        
+        vector4 n = vector4(normal, 0.0f);
+        vector4 nn = transforms->MVP_IT * n;
+        normals[nthvert] = vector3(nn.x, nn.y, nn.z);
+        
+        uvs[nthvert] = modelObj->getUV(idx.texcoord_index);
+        
+        return gl_Position;
+    }
+    
+    virtual bool fragment(vector3 bc, TGAColor &c) {
+        vector3 n;
+        n.x = normals[0].x*bc.x + normals[1].x*bc.y + normals[2].x*bc.z;
+        n.y = normals[0].y*bc.x + normals[1].y*bc.y + normals[2].y*bc.z;
+        n.z = normals[0].z*bc.x + normals[1].z*bc.y + normals[2].z*bc.z;
+        n.normalize();
+        
+        vector2 uv;
+        uv.x = uvs[0].x*bc.x + uvs[1].x*bc.y + uvs[2].x*bc.z;
+        uv.y = uvs[0].y*bc.x + uvs[1].y*bc.y + uvs[2].y*bc.z;
+        
+        c = modelObj->getDiffuse(uv.x, uv.y);
+        
+        float diff = std::max(0.f, n*l);
+        
+        vector3 r = (n*(n*l*2.f) - l).normalize();
+        float spec = std::pow(std::max(r.z, 0.0f), modelObj->getSpecular(uv.x, uv.y));
+        
+        for (int i=0; i<3; i++) c.bgra[i] = std::min<float>(5 + c.bgra[i]*(diff + .6*spec), 255);
         
         return true;
     }

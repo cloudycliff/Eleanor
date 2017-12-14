@@ -25,7 +25,7 @@ struct IShader {
     
     virtual void init() {};
     virtual vector4 vertex(int nface, int nthvert) = 0;
-    virtual bool fragment(vector3 bc, TGAColor &c) = 0;
+    virtual void fragment(vector3 bc, TGAColor &c) = 0;
 };
 
 struct TestShader : public IShader {
@@ -56,7 +56,7 @@ struct TestShader : public IShader {
         return gl_Position;
     }
     
-    virtual bool fragment(vector3 bc, TGAColor &c) {
+    virtual void fragment(vector3 bc, TGAColor &c) {
         vector3 n;
         n.x = normals[0].x*bc.x + normals[1].x*bc.y + normals[2].x*bc.z;
         n.y = normals[0].y*bc.x + normals[1].y*bc.y + normals[2].y*bc.z;
@@ -69,8 +69,6 @@ struct TestShader : public IShader {
         float diff = std::max(0.0f, n * l);
         
         c = modelObj->getDiffuse(uv.x, uv.y)*diff;
-        
-        return true;
     }
 };
 
@@ -103,7 +101,7 @@ struct PhongShader : public IShader {
         return gl_Position;
     }
     
-    virtual bool fragment(vector3 bc, TGAColor &c) {
+    virtual void fragment(vector3 bc, TGAColor &c) {
         vector3 n;
         n.x = normals[0].x*bc.x + normals[1].x*bc.y + normals[2].x*bc.z;
         n.y = normals[0].y*bc.x + normals[1].y*bc.y + normals[2].y*bc.z;
@@ -122,8 +120,6 @@ struct PhongShader : public IShader {
         float spec = std::pow(std::max(r.z, 0.0f), modelObj->getSpecular(uv.x, uv.y));
         
         for (int i=0; i<3; i++) c.bgra[i] = std::min<float>(5 + c.bgra[i]*(diff + .6*spec), 255);
-        
-        return true;
     }
 };
 
@@ -178,7 +174,7 @@ struct TangentShader : public IShader {
         return gl_Position;
     }
     
-    virtual bool fragment(vector3 bc, TGAColor &c) {
+    virtual void fragment(vector3 bc, TGAColor &c) {
         
         vector2 uv;
         uv.x = uvs[0].x*bc.x + uvs[1].x*bc.y + uvs[2].x*bc.z;
@@ -212,8 +208,6 @@ struct TangentShader : public IShader {
         
         vector3 viewDir = tangentViewPos-tangentFragPos;
 
-        //if (viewDir * normal <= 0) return false;
-
         //vector3 reflectDir = reflect(-lightDir, normal);
         vector3 halfwayDir = lightDir + viewDir;
         halfwayDir.normalize();
@@ -222,8 +216,6 @@ struct TangentShader : public IShader {
         TGAColor specular = TGAColor(32,32,32) * spec;
         
         c = ambient + diffuse + specular;
-        
-        return true;
     }
 };
 
@@ -258,7 +250,7 @@ struct TangentNormalShader : IShader {
         return gl_Position;
     }
     
-    virtual bool fragment(vector3 bc, TGAColor &c) {
+    virtual void fragment(vector3 bc, TGAColor &c) {
         vector3 n;
         n.x = normals[0].x*bc.x + normals[1].x*bc.y + normals[2].x*bc.z;
         n.y = normals[0].y*bc.x + normals[1].y*bc.y + normals[2].y*bc.z;
@@ -289,8 +281,6 @@ struct TangentNormalShader : IShader {
         float diff = std::max(0.0f, N * l);
         
         c = modelObj->getDiffuse(uv.x, uv.y)*diff;
-        
-        return true;
     }
 };
 
@@ -331,7 +321,7 @@ struct TangentAShader : public IShader {
         return gl_Position;
     }
     
-    virtual bool fragment(vector3 bc, TGAColor &c) {
+    virtual void fragment(vector3 bc, TGAColor &c) {
         
         vector2 uv;
         uv.x = uvs[0].x*bc.x + uvs[1].x*bc.y + uvs[2].x*bc.z;
@@ -351,8 +341,6 @@ struct TangentAShader : public IShader {
         TGAColor diffuse = color * diff;
         
         c = ambient + diffuse;
-        
-        return true;
     }
 };
 

@@ -245,8 +245,8 @@ void SoftRenderer::triangle(vector4 *in_pts, IShader &shader) {
             if (retain) {
                 zbuffer[int(p.x+p.y*width)] = z;
                 TGAColor color;
-                bool keep = shader.fragment(bc, color);
-                if (keep) set(p.x, p.y, color);
+                shader.fragment(bc, color);
+                set(p.x, p.y, color);
             }
         }
     }

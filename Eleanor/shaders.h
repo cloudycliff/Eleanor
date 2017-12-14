@@ -61,6 +61,7 @@ struct TestShader : public IShader {
         n.x = normals[0].x*bc.x + normals[1].x*bc.y + normals[2].x*bc.z;
         n.y = normals[0].y*bc.x + normals[1].y*bc.y + normals[2].y*bc.z;
         n.z = normals[0].z*bc.x + normals[1].z*bc.y + normals[2].z*bc.z;
+        n.normalize();
         
         vector2 uv;
         uv.x = uvs[0].x*bc.x + uvs[1].x*bc.y + uvs[2].x*bc.z;
@@ -81,7 +82,6 @@ struct PhongShader : public IShader {
     
     virtual void init() {
         l = matrix33(transforms->MVP) * (*light);
-        l.normalize();
     }
     
     virtual vector4 vertex(int nface, int nthvert) {

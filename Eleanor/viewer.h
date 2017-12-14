@@ -111,7 +111,7 @@ void Viewer::update() {
     shader[shaderId]->light = scene->light;
     shader[shaderId]->camera = scene->camera;
     
-    //renderer->line(100, 100, 500, 600, TGAColor(255,0,0));
+    //renderer->line(100, 100, 500, 400, TGAColor(255,0,0));
     
     //vector3 pts[3] = {vector3(10,10,0), vector3(100,320,0), vector3(490,460,0)};
     //renderer->triangle(pts, TGAColor(0,255,0));
